@@ -1,0 +1,76 @@
+@using CineTrack.Mobile.Services
+
+<div class="app-container">
+    <CascadingValue Value="NavigateToDetail">
+        <CascadingValue Value="GoBack" Name="OnGoBack">
+            <div class="main-content">
+                @switch (currentPage)
+                {
+                    case "home":
+                        <Home />
+                        break;
+                    case "search":
+                        <Search />
+                        break;
+                    case "detail":
+                        <Detail MidiaId="selectedMidiaId" />
+                        break;
+                    case "stats":
+                        <Stats />
+                        break;
+                    case "sync":
+                        <Sync />
+                        break;
+                }
+            </div>
+        </CascadingValue>
+    </CascadingValue>
+
+    @if (currentPage != "detail")
+    {
+        <nav class="bottom-nav">
+            <button class="@(currentPage == "home" ? "active" : "")" @onclick='() => Navigate("home")'>
+                <span class="nav-icon"><FaIcon Name="house" Size="20" /></span>
+                <span class="nav-label">Início</span>
+            </button>
+            <button class="@(currentPage == "search" ? "active" : "")" @onclick='() => Navigate("search")'>
+                <span class="nav-icon"><FaIcon Name="magnifying-glass" Size="20" /></span>
+                <span class="nav-label">Buscar</span>
+            </button>
+            <button class="@(currentPage == "stats" ? "active" : "")" @onclick='() => Navigate("stats")'>
+                <span class="nav-icon"><FaIcon Name="chart-pie" Size="20" /></span>
+                <span class="nav-label">Estatísticas</span>
+            </button>
+            <button class="@(currentPage == "sync" ? "active" : "")" @onclick='() => Navigate("sync")'>
+                <span class="nav-icon"><FaIcon Name="arrows-rotate" Size="20" /></span>
+                <span class="nav-label">Sync</span>
+            </button>
+        </nav>
+    }
+</div>
+
+@code {
+    private string currentPage = "home";
+    private int selectedMidiaId;
+    private string previousPage = "home";
+
+    private Action<int> NavigateToDetail => (midiaId) =>
+    {
+        previousPage = currentPage;
+        selectedMidiaId = midiaId;
+        currentPage = "detail";
+        StateHasChanged();
+    };
+
+    private Action GoBack => () =>
+    {
+        currentPage = previousPage;
+        StateHasChanged();
+    };
+
+    private void Navigate(string page)
+    {
+        previousPage = currentPage;
+        currentPage = page;
+    }
+}

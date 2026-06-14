@@ -1,0 +1,142 @@
+@page "/"
+@inject CineTrackApiClient ApiClient
+
+<div class="home-page">
+    <div class="home-header">
+        <h1>C I N E T R A C K</h1>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="error-box">@errorMessage</div>
+    }
+
+    @if (loading)
+    {
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <span class="loading-text">Carregando...</span>
+        </div>
+    }
+    else
+    {
+        @if (emAndamento.Any())
+        {
+            <div class="section-header">
+                <span class="section-title">Continue <em>onde parou</em></span>
+                <span class="section-link">ver tudo</span>
+            </div>
+            <span class="section-rule"></span>
+            <div class="media-scroll">
+                @foreach (var midia in emAndamento)
+                {
+                    <MediaCard Midia="midia" ShowProgress="true" OnSelect="NavigateTo" />
+                }
+            </div>
+        }
+
+        @if (sugestoes.Any())
+        {
+            <div class="section-header">
+                <span class="section-title">Sugestões <em>para você</em></span>
+                <span class="section-link">ver mais</span>
+            </div>
+            <span class="section-rule"></span>
+            <div class="media-scroll">
+                @foreach (var midia in sugestoes)
+                {
+                    <MediaCard Midia="midia" OnSelect="NavigateTo" />
+                }
+            </div>
+        }
+
+        @if (recentes.Any())
+        {
+            <div class="section-header">
+                <span class="section-title">Recentemente <em>assistidos</em></span>
+                <span class="section-link">ver tudo</span>
+            </div>
+            <span class="section-rule"></span>
+            <div class="media-scroll">
+                @foreach (var midia in recentes)
+                {
+                    <MediaCard Midia="midia" FooterText="@BuildRecentFooter(midia)" OnSelect="NavigateTo" />
+                }
+            </div>
+        }
+
+        @if (!emAndamento.Any() && !sugestoes.Any() && !recentes.Any() && string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="empty-state">
+                <div class="empty-icon"><FaIcon Name="film-slash" Size="44" /></div>
+                <p>Nenhuma mídia encontrada</p>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool loading = true;
+    private string? errorMessage;
+    private IEnumerable<MidiaCompletaVM> emAndamento = [];
+    private IEnumerable<MidiaCompletaVM> sugestoes = [];
+    private IEnumerable<MidiaCompletaVM> recentes = [];
+
+    [CascadingParameter]
+    private Action<int>? OnNavigate { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var isConnected = await ApiClient.CheckHealthAsync();
+            if (!isConnected)
+            {
+                errorMessage = "Não foi possível conectar ao servidor";
+                return;
+            }
+
+            emAndamento = await TryLoadAsync(() => ApiClient.GetEmAndamentoAsync());
+            sugestoes = await TryLoadAsync(() => ApiClient.GetSugestoesAsync(6));
+            recentes = await TryLoadAsync(() => ApiClient.GetRecentesAsync(6));
+
+            if (!emAndamento.Any() && !sugestoes.Any() && !recentes.Any())
+            {
+                errorMessage ??= "Nenhuma seção pôde ser carregada neste momento.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void NavigateTo(int midiaId) => OnNavigate?.Invoke(midiaId);
+
+    private async Task<IEnumerable<MidiaCompletaVM>> TryLoadAsync(Func<Task<IEnumerable<MidiaCompletaVM>>> loader)
+    {
+        try
+        {
+            return await loader();
+        }
+        catch (Exception ex)
+        {
+            errorMessage ??= $"Alguns dados não puderam ser carregados: {ex.Message}";
+            return [];
+        }
+    }
+
+    private static string BuildRecentFooter(MidiaCompletaVM midia)
+    {
+        if (midia.EstrelaUsuario > 0)
+        {
+            return $"{midia.EstrelaUsuario}★ · {midia.StatusDescricao}";
+        }
+
+        return midia.StatusDescricao;
+    }
+}

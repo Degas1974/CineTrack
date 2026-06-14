@@ -1,0 +1,134 @@
+@inject CineTrackApiClient ApiClient
+
+<div class="search-page">
+    <div class="search-container">
+        <span class="search-icon"><FaIcon Name="magnifying-glass" Size="18" /></span>
+        <input type="text" class="search-input" placeholder="Título, diretor ou ator"
+               @bind="searchTerm" @bind:event="oninput" @onkeyup="HandleKeyUp" />
+    </div>
+
+    <div class="filter-chips">
+        <span class="chip @(filtroTipo == null ? "active" : "")" @onclick="() => SetFiltroTipo(null)">Todos</span>
+        <span class="chip @(filtroTipo == TipoMidia.Filme ? "active" : "")" @onclick="() => SetFiltroTipo(TipoMidia.Filme)">Filmes</span>
+        <span class="chip @(filtroTipo == TipoMidia.Serie ? "active" : "")" @onclick="() => SetFiltroTipo(TipoMidia.Serie)">Séries</span>
+    </div>
+
+    <div class="filter-chips">
+        <span class="chip @(filtroStatus == null ? "active" : "")" @onclick="() => SetFiltroStatus(null)">Todos</span>
+        <span class="chip @(filtroStatus == StatusMidia.Assistindo ? "active" : "")" @onclick="() => SetFiltroStatus(StatusMidia.Assistindo)">Assistindo</span>
+        <span class="chip @(filtroStatus == StatusMidia.Assistido ? "active" : "")" @onclick="() => SetFiltroStatus(StatusMidia.Assistido)">Assistido</span>
+        <span class="chip @(filtroStatus == StatusMidia.Pendente ? "active" : "")" @onclick="() => SetFiltroStatus(StatusMidia.Pendente)">Pendente</span>
+    </div>
+
+    @if (loading)
+    {
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <span class="loading-text">Buscando...</span>
+        </div>
+    }
+    else if (!resultados.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon"><FaIcon Name="binoculars" Size="44" /></div>
+            <p>@(string.IsNullOrWhiteSpace(searchTerm) ? "Digite algo para buscar" : "Nenhum resultado encontrado")</p>
+        </div>
+    }
+    else
+    {
+        <div class="search-results">
+            @foreach (var midia in resultados)
+            {
+                <div class="search-result-item" @onclick="() => NavigateTo(midia.Id)">
+                    <div class="result-poster">
+                        @if (!string.IsNullOrEmpty(GetPosterUrl(midia)))
+                        {
+                            <img src="@GetPosterUrl(midia)" alt="@midia.Titulo" />
+                        }
+                        else
+                        {
+                            <FaIcon Name="@(midia.Tipo == TipoMidia.Serie ? "tv-retro" : "clapperboard")" Size="22" />
+                        }
+                    </div>
+                    <div class="result-info">
+                        <span class="result-title">@midia.Titulo</span>
+                        @if (!string.IsNullOrEmpty(midia.TituloOriginal) && midia.TituloOriginal != midia.Titulo)
+                        {
+                            <span class="result-subtitle">@midia.TituloOriginal</span>
+                        }
+                        <div class="result-meta">
+                            <span>
+                                <FaIcon Name="@(midia.Tipo == TipoMidia.Serie ? "tv-retro" : "clapperboard")" Size="12" />
+                                @(midia.Tipo == TipoMidia.Serie ? "Série" : "Filme")
+                            </span>
+                            <span>@midia.Ano</span>
+                            @if (midia.ImdbRating.HasValue)
+                            {
+                                <span class="result-rating">
+                                    <FaIcon Name="star" Size="12" />
+                                    @midia.ImdbRating.Value.ToString("0.0")
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string searchTerm = "";
+    private TipoMidia? filtroTipo;
+    private StatusMidia? filtroStatus;
+    private bool loading = false;
+    private IEnumerable<MidiaCompletaVM> resultados = [];
+
+    [CascadingParameter]
+    private Action<int>? OnNavigate { get; set; }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await DoSearch();
+    }
+
+    private async Task DoSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm) && filtroTipo == null && filtroStatus == null)
+        {
+            resultados = [];
+            return;
+        }
+
+        loading = true;
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+                resultados = await ApiClient.SearchMidiasAsync(searchTerm, filtroStatus, filtroTipo);
+            else
+                resultados = await ApiClient.GetMidiasAsync(filtroStatus, filtroTipo);
+        }
+        finally { loading = false; }
+    }
+
+    private async Task SetFiltroTipo(TipoMidia? tipo)
+    {
+        filtroTipo = tipo;
+        await DoSearch();
+    }
+
+    private async Task SetFiltroStatus(StatusMidia? status)
+    {
+        filtroStatus = status;
+        await DoSearch();
+    }
+
+    private void NavigateTo(int midiaId) => OnNavigate?.Invoke(midiaId);
+
+    private static string? GetPosterUrl(MidiaCompletaVM midia)
+    {
+        return string.IsNullOrWhiteSpace(midia.ImagemUrl)
+            ? midia.ImagemExibicao
+            : midia.ImagemUrl;
+    }
+}

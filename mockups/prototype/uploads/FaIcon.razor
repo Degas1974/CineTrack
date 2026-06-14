@@ -1,0 +1,41 @@
+@inject CineTrack.Mobile.Services.IconService Icons
+@implements IDisposable
+
+<span class="fa-icon @CssClass" style="@BuildStyle()" aria-hidden="true">@((MarkupString)_svg)</span>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = string.Empty;
+    [Parameter] public int Size { get; set; } = 16;
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+
+    private string _svg = string.Empty;
+    private string _loadedName = string.Empty;
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedName == Name) return;
+        _loadedName = Name;
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        var svg = await Icons.GetAsync(Name);
+        if (!token.IsCancellationRequested)
+        {
+            _svg = svg;
+        }
+    }
+
+    private string BuildStyle()
+    {
+        var style = $"width:{Size}px;height:{Size}px;";
+        if (!string.IsNullOrWhiteSpace(Color))
+        {
+            style += $"color:{Color};";
+        }
+        return style;
+    }
+
+    public void Dispose() => _cts?.Cancel();
+}

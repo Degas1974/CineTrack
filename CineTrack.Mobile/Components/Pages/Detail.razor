@@ -1,0 +1,430 @@
+@inject CineTrackApiClient ApiClient
+@using System.Globalization
+
+<div class="detail-page">
+    @if (loading)
+    {
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <span class="loading-text">Carregando...</span>
+        </div>
+    }
+    else if (midia == null)
+    {
+        <div class="empty-state">
+            <div class="empty-icon"><FaIcon Name="circle-xmark" Size="44" /></div>
+            <p>Mídia não encontrada</p>
+        </div>
+    }
+    else
+    {
+        <div class="detail-header">
+            <div class="detail-backdrop">
+                @if (!string.IsNullOrEmpty(GetPosterUrl(midia)))
+                {
+                    <img src="@GetPosterUrl(midia)" alt="@midia.Titulo" />
+                }
+                else
+                {
+                    <span class="backdrop-placeholder">
+                        <FaIcon Name="@(midia.Tipo == TipoMidia.Serie ? "tv-retro" : "clapperboard")" Size="64" />
+                    </span>
+                }
+            </div>
+            <button class="detail-back-btn" @onclick="GoBack">
+                <FaIcon Name="chevron-left" Size="16" />
+            </button>
+            <div class="detail-poster-container">
+                <div class="detail-poster">
+                    @if (!string.IsNullOrEmpty(GetPosterUrl(midia)))
+                    {
+                        <img src="@GetPosterUrl(midia)" alt="@midia.Titulo" />
+                    }
+                    else
+                    {
+                        <span class="poster-placeholder">
+                            <FaIcon Name="@(midia.Tipo == TipoMidia.Serie ? "tv-retro" : "clapperboard")" Size="32" />
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-main-info">
+            @if (!string.IsNullOrWhiteSpace(feedbackMessage))
+            {
+                <div class="@(feedbackIsError ? "error-box" : "success-box")">@feedbackMessage</div>
+            }
+
+            <div class="detail-title">@midia.Titulo</div>
+            @if (!string.IsNullOrEmpty(midia.TituloOriginal) && midia.TituloOriginal != midia.Titulo)
+            {
+                <div class="detail-subtitle">@midia.TituloOriginal</div>
+            }
+            <span class="detail-title-rule"></span>
+
+            <div class="detail-meta">
+                <span><FaIcon Name="calendar" Size="12" /> @midia.Ano</span>
+                <span>
+                    <FaIcon Name="@(midia.Tipo == TipoMidia.Serie ? "tv-retro" : "clapperboard")" Size="12" />
+                    @(midia.Tipo == TipoMidia.Serie ? "Série" : "Filme")
+                </span>
+                @if (midia.Duracao.HasValue)
+                {
+                    <span><FaIcon Name="clock" Size="12" /> @midia.Duracao min</span>
+                }
+            </div>
+
+            <div class="detail-ratings">
+                <div class="detail-rating-card imdb">
+                    <div class="detail-rating-icon"><FaIcon Name="star" Size="20" Color="var(--imdb)" /></div>
+                    <div class="detail-rating-value">@(midia.ImdbRating?.ToString("0.0") ?? "—")</div>
+                    <div class="detail-rating-label">IMDb</div>
+                </div>
+                <div class="detail-rating-card tomato">
+                    <div class="detail-rating-icon"><FaIcon Name="tomato" Size="20" Color="var(--tomato)" /></div>
+                    <div class="detail-rating-value">@(midia.Tomatometer?.ToString() ?? "—")%</div>
+                    <div class="detail-rating-label">Tomatometer</div>
+                </div>
+                <div class="detail-rating-card popcorn">
+                    <div class="detail-rating-icon"><FaIcon Name="popcorn" Size="20" Color="var(--popcorn)" /></div>
+                    <div class="detail-rating-value">@(midia.Popcornmeter?.ToString() ?? "—")%</div>
+                    <div class="detail-rating-label">Popcornmeter</div>
+                </div>
+                <div class="detail-rating-card user">
+                    <div class="detail-rating-icon"><FaIcon Name="heart" Size="20" Color="var(--gold)" /></div>
+                    <div class="detail-rating-value">@(midia.EstrelaUsuario?.ToString() ?? "—")</div>
+                    <div class="detail-rating-label">Minha Nota</div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(midia.Generos))
+            {
+                <div class="genres">
+                    @foreach (var genero in midia.Generos.Split(','))
+                    {
+                        <span class="genre-tag">@genero.Trim()</span>
+                    }
+                </div>
+            }
+
+            @if (midia.Tipo == TipoMidia.Serie && midia.TotalEpisodios > 0)
+            {
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span class="progress-label">Progresso</span>
+                        <span class="progress-value">@midia.EpisodiosAssistidos de @midia.TotalEpisodios episódios</span>
+                    </div>
+                    <div class="progress-bar-large">
+                        <div class="progress-fill-large" style="width: @(midia.ProgressoPercentual)%"></div>
+                    </div>
+                </div>
+            }
+
+            <div class="action-buttons-section">
+                <div class="action-buttons-header">
+                    <div>
+                        <div class="action-buttons-title">Seu status</div>
+                        <div class="action-buttons-subtitle">Atualize rapidamente como essa mídia está na sua jornada.</div>
+                    </div>
+                    <div class="action-buttons-badge">@midia.StatusDescricao</div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="button"
+                            class="action-btn @(midia.StatusUsuario == StatusMidia.Assistido ? "success is-active" : "secondary")"
+                            @onclick="() => UpdateStatus(StatusMidia.Assistido)">
+                        <span class="btn-icon"><FaIcon Name="check" Size="14" /></span>
+                        <span class="action-btn-text">Assistido</span>
+                        <span class="action-btn-hint">Concluído</span>
+                    </button>
+                    <button type="button"
+                            class="action-btn @(midia.StatusUsuario == StatusMidia.Assistindo ? "primary is-active" : "secondary")"
+                            @onclick="() => UpdateStatus(StatusMidia.Assistindo)">
+                        <span class="btn-icon"><FaIcon Name="play" Size="14" /></span>
+                        <span class="action-btn-text">Assistindo</span>
+                        <span class="action-btn-hint">Em andamento</span>
+                    </button>
+                    <button type="button"
+                            class="action-btn @(midia.StatusUsuario == StatusMidia.Abandonado ? "danger is-active" : "secondary")"
+                            @onclick="() => UpdateStatus(StatusMidia.Abandonado)">
+                        <span class="btn-icon"><FaIcon Name="ban" Size="14" /></span>
+                        <span class="action-btn-text">Desistir</span>
+                        <span class="action-btn-hint">Não continuar</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(midia.Descricao))
+            {
+                <div class="detail-description-section">
+                    <div class="section-header">
+                        <span class="section-title"><FaIcon Name="align-left" Size="14" /> Sinopse</span>
+                    </div>
+                    <span class="section-rule"></span>
+                    <div class="detail-description">@midia.Descricao</div>
+                </div>
+            }
+
+            <div class="user-rating-section">
+                <div class="user-rating-header">
+                    <div>
+                        <div class="user-rating-title">Sua avaliação</div>
+                        <div class="user-rating-label">Escolha de 1 a 5 estrelas e registre uma nota opcional de 0 a 10.</div>
+                    </div>
+                    <div class="user-rating-badge">@(selectedEstrelas > 0 ? $"{selectedEstrelas}/5" : "Sem nota")</div>
+                </div>
+
+                <div class="star-rating">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        var star = i;
+                        <button type="button"
+                                class="star @(star <= selectedEstrelas ? "active" : "")"
+                                title="Avaliar com @star estrela(s)"
+                                @onclick="() => UpdateRating(star)">★</button>
+                    }
+                </div>
+
+                <div class="user-review-form">
+                    <div class="review-field review-field-note">
+                        <label class="review-label" for="nota-pessoal">Nota pessoal</label>
+                        <input id="nota-pessoal"
+                               class="review-input"
+                               type="number"
+                               min="0"
+                               max="10"
+                               step="0.1"
+                               placeholder="0,0 a 10,0"
+                               @bind="notaUsuarioTexto" />
+                        <div class="review-hint">Use a mesma escala do IMDb para registrar sua opinião pessoal.</div>
+                    </div>
+
+                    <div class="review-field review-field-comment">
+                        <label class="review-label" for="comentario-pessoal">Comentário opcional</label>
+                        <textarea id="comentario-pessoal"
+                                  class="review-textarea"
+                                  maxlength="1000"
+                                  placeholder="O que você achou? Atuações, direção, roteiro, ritmo..."
+                                  @bind="comentarioUsuario"></textarea>
+                        <div class="review-hint">Até 1000 caracteres.</div>
+                    </div>
+
+                    <button class="review-save-btn"
+                            disabled="@savingReview"
+                            @onclick="SaveReview">
+                        <span class="btn-icon"><FaIcon Name="floppy-disk" Size="14" /></span>
+                        <span>@(savingReview ? "Salvando avaliação..." : "Salvar avaliação")</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (temporadas.Any())
+            {
+                <div class="seasons-section">
+                    <div class="section-header">
+                        <span class="section-title"><FaIcon Name="tv-retro" Size="14" /> Temporadas</span>
+                    </div>
+                    <span class="section-rule"></span>
+                    @foreach (var temp in temporadas.OrderBy(t => t.Numero))
+                    {
+                        <div class="season-card">
+                            <div class="season-header" @onclick="() => ToggleTemporada(temp.Id)">
+                                <span class="season-title">Temporada @temp.Numero</span>
+                                <span class="season-progress">@temp.EpisodiosAssistidos/@temp.TotalEpisodios eps</span>
+                            </div>
+                            @if (expandedTemporadas.Contains(temp.Id))
+                            {
+                                <div class="season-episodes">
+                                    @foreach (var ep in episodios.Where(e => e.TemporadaId == temp.Id).OrderBy(e => e.Numero))
+                                    {
+                                        <div class="episode-item @(ep.Assistido ? "watched" : "")" @onclick="() => ToggleEpisodio(ep)">
+                                            <span class="episode-number">E@(ep.Numero.ToString("D2"))</span>
+                                            <span class="episode-title">@(ep.Titulo ?? $"Episódio {ep.Numero}")</span>
+                                            <span class="episode-check">
+                                                <FaIcon Name="@(ep.Assistido ? "circle-check" : "circle")" Size="14" />
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int MidiaId { get; set; }
+    [CascadingParameter] private Action? OnGoBack { get; set; }
+
+    private bool loading = true;
+    private MidiaCompletaVM? midia;
+    private IEnumerable<TemporadaCompletaVM> temporadas = [];
+    private IEnumerable<EpisodioCompletoVM> episodios = [];
+    private HashSet<int> expandedTemporadas = [];
+    private string notaUsuarioTexto = string.Empty;
+    private string comentarioUsuario = string.Empty;
+    private string? feedbackMessage;
+    private bool feedbackIsError;
+    private bool savingReview;
+    private int selectedEstrelas;
+
+    protected override async Task OnParametersSetAsync() => await LoadData(clearFeedback: true);
+
+    private async Task LoadData(bool clearFeedback = false)
+    {
+        loading = true;
+        if (clearFeedback)
+        {
+            feedbackMessage = null;
+        }
+
+        try
+        {
+            midia = await ApiClient.GetMidiaByIdAsync(MidiaId);
+            if (midia != null && midia.Tipo == TipoMidia.Serie)
+            {
+                temporadas = await ApiClient.GetTemporadasAsync(MidiaId);
+                episodios = await ApiClient.GetEpisodiosAsync(MidiaId);
+            }
+
+            notaUsuarioTexto = midia?.NotaUsuario?.ToString("0.0", CultureInfo.InvariantCulture) ?? string.Empty;
+            comentarioUsuario = midia?.ComentarioUsuario ?? string.Empty;
+            selectedEstrelas = midia?.EstrelaUsuario ?? 0;
+        }
+        finally { loading = false; }
+    }
+
+    private void GoBack() => OnGoBack?.Invoke();
+
+    private async Task UpdateStatus(StatusMidia status)
+    {
+        try
+        {
+            await ApiClient.UpdateStatusAsync(MidiaId, status);
+            feedbackIsError = false;
+            feedbackMessage = "Status atualizado.";
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            feedbackIsError = true;
+            feedbackMessage = $"Erro ao atualizar status: {ex.Message}";
+        }
+    }
+
+    private async Task UpdateRating(int estrelas)
+    {
+        selectedEstrelas = estrelas;
+
+        try
+        {
+            await ApiClient.UpdateNotaAsync(MidiaId, estrelas, ParseNota(), comentarioUsuario);
+            feedbackIsError = false;
+            feedbackMessage = "Avaliação atualizada.";
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            feedbackIsError = true;
+            feedbackMessage = $"Erro ao atualizar avaliação: {ex.Message}";
+        }
+    }
+
+    private async Task SaveReview()
+    {
+        if (midia == null)
+        {
+            return;
+        }
+
+        var nota = ParseNota();
+        if (notaUsuarioTexto.Length > 0 && nota == null)
+        {
+            feedbackIsError = true;
+            feedbackMessage = "Informe uma nota válida entre 0 e 10.";
+            return;
+        }
+
+        if (selectedEstrelas <= 0)
+        {
+            feedbackIsError = true;
+            feedbackMessage = "Selecione de 1 a 5 estrelas antes de salvar a avaliação.";
+            return;
+        }
+
+        savingReview = true;
+        feedbackMessage = null;
+
+        try
+        {
+            await ApiClient.UpdateNotaAsync(MidiaId, selectedEstrelas, nota, comentarioUsuario);
+            feedbackIsError = false;
+            feedbackMessage = "Comentário e nota salvos.";
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            feedbackIsError = true;
+            feedbackMessage = $"Erro ao salvar avaliação: {ex.Message}";
+        }
+        finally
+        {
+            savingReview = false;
+        }
+    }
+
+    private void ToggleTemporada(int id)
+    {
+        if (expandedTemporadas.Contains(id)) expandedTemporadas.Remove(id);
+        else expandedTemporadas.Add(id);
+    }
+
+    private async Task ToggleEpisodio(EpisodioCompletoVM ep)
+    {
+        try
+        {
+            if (ep.Assistido) await ApiClient.DesmarcarEpisodioAsync(ep.Id);
+            else await ApiClient.MarcarEpisodioAssistidoAsync(ep.Id);
+
+            feedbackIsError = false;
+            feedbackMessage = "Progresso atualizado.";
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            feedbackIsError = true;
+            feedbackMessage = $"Erro ao atualizar episódio: {ex.Message}";
+        }
+    }
+
+    private decimal? ParseNota()
+    {
+        if (string.IsNullOrWhiteSpace(notaUsuarioTexto))
+        {
+            return null;
+        }
+
+        if (decimal.TryParse(notaUsuarioTexto, NumberStyles.Number, CultureInfo.InvariantCulture, out var notaInvariante))
+        {
+            return notaInvariante >= 0 && notaInvariante <= 10 ? notaInvariante : null;
+        }
+
+        if (decimal.TryParse(notaUsuarioTexto, NumberStyles.Number, CultureInfo.CurrentCulture, out var notaLocal))
+        {
+            return notaLocal >= 0 && notaLocal <= 10 ? notaLocal : null;
+        }
+
+        return null;
+    }
+
+    private static string? GetPosterUrl(MidiaCompletaVM midia)
+    {
+        return string.IsNullOrWhiteSpace(midia.ImagemUrl)
+            ? midia.ImagemExibicao
+            : midia.ImagemUrl;
+    }
+}

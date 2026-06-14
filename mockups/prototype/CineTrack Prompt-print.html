@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>CineTrack — Guia de Uso dos Mockups</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:    #0a0908;
+    --bg1:   #13110f;
+    --bg2:   #1c1916;
+    --bg3:   #26211c;
+    --gold:  #e8b94a;
+    --golddim: #a8862e;
+    --red:   #c64133;
+    --text:  #f5ebd6;
+    --text2: rgba(245,235,214,.72);
+    --text3: rgba(245,235,214,.45);
+    --text4: rgba(245,235,214,.22);
+    --border: rgba(255,235,200,.08);
+    --border2: rgba(255,235,200,.16);
+    --success: #5fa86a;
+    --sans: 'Inter', system-ui, sans-serif;
+    --serif: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── LAYOUT ─────────────────────────────────── */
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  /* ── HEADER ─────────────────────────────────── */
+  .hero {
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border2);
+    margin-bottom: 56px;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .hero-title {
+    font-family: var(--serif);
+    font-size: clamp(40px, 7vw, 64px);
+    font-weight: 600;
+    line-height: 0.92;
+    letter-spacing: -2px;
+    color: var(--text);
+  }
+  .hero-title em { color: var(--gold); font-style: italic; font-weight: 400; }
+  .hero-sub {
+    margin-top: 20px;
+    font-size: 15px;
+    color: var(--text2);
+    max-width: 540px;
+    line-height: 1.7;
+  }
+  .hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    background: var(--bg1);
+    letter-spacing: 0.5px;
+  }
+  .tag.gold { border-color: var(--golddim); color: var(--gold); background: rgba(232,185,74,.08); }
+
+  /* ── SECTIONS ───────────────────────────────── */
+  section { margin-bottom: 56px; }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border2);
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .section-desc {
+    color: var(--text3);
+    font-size: 13px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  /* ── FILE TREE ──────────────────────────────── */
+  .filetree {
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .filetree-header {
+    padding: 12px 18px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border2);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .filetree-body { padding: 18px 20px; }
+  .tree-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 4px 0;
+    line-height: 1.5;
+  }
+  .tree-indent { color: var(--text4); white-space: pre; }
+  .tree-name { color: var(--text); }
+  .tree-name.folder { color: var(--gold); }
+  .tree-name.highlight { color: var(--gold); font-weight: 600; }
+  .tree-comment { color: var(--text3); font-size: 11px; flex: 1; }
+  .tree-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .badge-placeholder { background: rgba(232,185,74,.15); color: var(--gold); border: 1px solid rgba(232,185,74,.3); }
+  .badge-original   { background: rgba(198,65,51,.15); color: #e07060; border: 1px solid rgba(198,65,51,.3); }
+  .badge-system     { background: rgba(95,168,106,.12); color: #7dc98a; border: 1px solid rgba(95,168,106,.3); }
+
+  /* ── PLACEHOLDER TABLE ──────────────────────── */
+  .placeholder-card {
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .placeholder-head {
+    padding: 14px 18px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .placeholder-file {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+  .placeholder-scope {
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .placeholder-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .ph-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    align-items: start;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ph-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .ph-key {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    padding-top: 1px;
+  }
+  .ph-desc { font-size: 13px; color: var(--text2); line-height: 1.55; }
+  .ph-example {
+    margin-top: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    background: var(--bg3);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border-left: 2px solid var(--gold);
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* ── CODE BLOCK ─────────────────────────────── */
+  pre {
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: var(--text2);
+    margin-bottom: 16px;
+  }
+  pre .kw  { color: #a78bfa; }
+  pre .str { color: #86efac; }
+  pre .num { color: var(--gold); }
+  pre .cm  { color: var(--text4); font-style: italic; }
+  pre .fn  { color: #7dd3fc; }
+
+  /* ── STEPS ──────────────────────────────────── */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+    width: 36px;
+    flex-shrink: 0;
+    padding-top: 2px;
+    opacity: 0.6;
+  }
+  .step-content { flex: 1; }
+  .step-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+  .step-desc  { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .step-desc code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    background: var(--bg2);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold);
+    border: 1px solid var(--border2);
+  }
+
+  /* ── PROMPT BOX ─────────────────────────────── */
+  .prompt-box {
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .prompt-box-header {
+    padding: 14px 20px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border2);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .prompt-box-body {
+    padding: 22px 22px;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--text2);
+    white-space: pre-wrap;
+    font-family: var(--sans);
+  }
+  .prompt-box-body b { color: var(--text); font-weight: 700; }
+  .prompt-box-body code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg3);
+    padding: 1px 7px;
+    border-radius: 3px;
+    color: var(--gold);
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .15s;
+    letter-spacing: 0.5px;
+  }
+  .copy-btn:hover { background: var(--bg3); color: var(--text2); }
+  .copy-btn.copied { color: var(--success); border-color: var(--success); }
+
+  /* ── GRID CARDS ─────────────────────────────── */
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 620px) { .card-grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .card-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  .card-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .card-desc  { font-size: 12px; color: var(--text3); line-height: 1.6; }
+
+  /* ── DIVIDER ─────────────────────────────────── */
+  .divider { border: none; border-top: 1px solid var(--border2); margin: 48px 0; }
+
+  /* ── INLINE CODE ─────────────────────────────── */
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg2);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold);
+    border: 1px solid var(--border);
+  }
+
+  /* ── CALLOUT ─────────────────────────────────── */
+  .callout {
+    padding: 16px 18px;
+    border-radius: 8px;
+    border: 1px solid;
+    font-size: 13px;
+    line-height: 1.6;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .callout.tip  { background: rgba(232,185,74,.06); border-color: rgba(232,185,74,.25); color: var(--text2); }
+  .callout.info { background: rgba(95,168,106,.06); border-color: rgba(95,168,106,.25); color: var(--text2); }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── NAV ─────────────────────────────────────── */
+  .toc {
+    position: sticky;
+    top: 24px;
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 12px;
+    display: none;
+  }
+  .toc-title { font-family: var(--mono); font-size: 10px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .toc a { display: block; color: var(--text3); text-decoration: none; padding: 3px 0; transition: color .12s; }
+  .toc a:hover { color: var(--text); }
+  .toc a.indent { padding-left: 14px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ─────── HERO ─────── -->
+  <header class="hero">
+    <div class="hero-eyebrow">CineTrack · Guia de Uso · Jun 2026</div>
+    <h1 class="hero-title">Como usar<br>os <em>mockups</em>.</h1>
+    <p class="hero-sub">
+      Este documento explica a estrutura do projeto, onde ficam os dados de placeholder, como substituí-los pelo seu backend real, e os prompts prontos para trabalhar com IA no redesign.
+    </p>
+    <div class="hero-tags">
+      <span class="tag gold">CineTrack.html — entry point</span>
+      <span class="tag">src/data.jsx — placeholders</span>
+      <span class="tag">uploads/ — .razor originais</span>
+      <span class="tag">src/primitives.jsx — design tokens</span>
+    </div>
+  </header>
+
+  <!-- ─────── ESTRUTURA ─────── -->
+  <section id="estrutura">
+    <div class="section-label">01 · Estrutura</div>
+    <h2 class="section-title">Onde está cada arquivo</h2>
+    <p class="section-desc">O projeto tem duas camadas: os <b>.razor originais</b> que você escreveu e o <b>redesign HTML</b> navegável gerado a partir deles.</p>
+
+    <div class="filetree">
+      <div class="filetree-header">
+        <div style="display:flex;gap:6px">
+          <div class="dot" style="background:#c64133"></div>
+          <div class="dot" style="background:#e8b94a"></div>
+          <div class="dot" style="background:#5fa86a"></div>
+        </div>
+        CineTrack / — raiz do projeto
+      </div>
+      <div class="filetree-body">
+
+        <div class="tree-line">
+          <span class="tree-name" style="color:var(--text); font-weight:700">CineTrack.html</span>
+          <span class="tree-badge badge-system">ENTRY POINT</span>
+          <span class="tree-comment">Abrir no browser — carrega tudo</span>
+        </div>
+
+        <div class="tree-line" style="margin-top:12px">
+          <span class="tree-name folder">src/</span>
+          <span class="tree-comment">Redesign HTML (protótipo)</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name highlight">data.jsx</span>
+          <span class="tree-badge badge-placeholder">PLACEHOLDERS</span>
+          <span class="tree-comment">Todos os dados falsos ficam aqui</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">icons.jsx</span>
+          <span class="tree-comment">Ícones SVG inline</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">primitives.jsx</span>
+          <span class="tree-badge badge-system">TOKENS</span>
+          <span class="tree-comment">Paleta, fontes, PhoneFrame, MediaCard</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">screen-home.jsx</span>
+          <span class="tree-comment">Tela Home (variantes A e B)</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">screen-search.jsx</span>
+          <span class="tree-comment">Tela de busca com filtros</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">screen-detail.jsx</span>
+          <span class="tree-comment">Detalhe de filme/série</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">screen-stats.jsx</span>
+          <span class="tree-comment">Dashboard de estatísticas</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">screen-sync.jsx</span>
+          <span class="tree-comment">Sync com 4 abas</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  └─ </span>
+          <span class="tree-name">app.jsx</span>
+          <span class="tree-comment">Composição final + DesignCanvas + Tweaks</span>
+        </div>
+
+        <div class="tree-line" style="margin-top:12px">
+          <span class="tree-name folder">uploads/</span>
+          <span class="tree-comment">Seus .razor originais (referência)</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">Main.razor</span>
+          <span class="tree-badge badge-original">ORIGINAL</span>
+          <span class="tree-comment">Shell + navegação</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">Home.razor</span>
+          <span class="tree-badge badge-original">ORIGINAL</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">Search.razor</span>
+          <span class="tree-badge badge-original">ORIGINAL</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">Detail.razor</span>
+          <span class="tree-badge badge-original">ORIGINAL</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">Stats.razor</span>
+          <span class="tree-badge badge-original">ORIGINAL</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  ├─ </span>
+          <span class="tree-name">Sync.razor</span>
+          <span class="tree-badge badge-original">ORIGINAL</span>
+        </div>
+        <div class="tree-line">
+          <span class="tree-indent">  └─ </span>
+          <span class="tree-name">MediaCard.razor</span>
+          <span class="tree-badge badge-original">ORIGINAL</span>
+          <span class="tree-comment">Componente de card</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── PLACEHOLDERS ─────── -->
+  <section id="placeholders">
+    <div class="section-label">02 · Placeholders</div>
+    <h2 class="section-title">Onde ficam e o que trocam</h2>
+    <p class="section-desc">
+      <strong>Todos</strong> os dados fictícios do protótipo estão em <code>src/data.jsx</code>. Edite esse único arquivo para testar cenários reais sem tocar nas telas.
+    </p>
+
+    <!-- MEDIA -->
+    <div class="placeholder-card">
+      <div class="placeholder-head">
+        <div>
+          <div class="placeholder-file">src/data.jsx → MEDIA[]</div>
+          <div class="placeholder-scope">Array de filmes e séries com 12 itens de exemplo</div>
+        </div>
+        <span class="tree-badge badge-placeholder">PLACEHOLDER</span>
+      </div>
+      <div class="placeholder-body">
+        <div class="ph-row">
+          <div class="ph-key">poster / backdrop</div>
+          <div class="ph-desc">
+            URLs de imagem do TMDB — formato <code>https://image.tmdb.org/t/p/w500/{path}</code>.
+            Substitua pelo campo da sua API (<code>ImagemUrl</code> ou <code>ImagemExibicao</code>).
+            <div class="ph-example">poster: POSTER('/lFf6LLrQjYldcZItzOkGmMMigP7.jpg')
+// ↓ no seu código:
+poster: midia.ImagemUrl ?? midia.ImagemExibicao</div>
+          </div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">status</div>
+          <div class="ph-desc">
+            Valores válidos: <code>'Assistindo'</code>, <code>'Assistido'</code>, <code>'Pendente'</code>, <code>'Abandonado'</code>. Devem bater com os <code>StatusMidia</code> do seu enum.
+          </div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">imdb / tomato / popcorn</div>
+          <div class="ph-desc">
+            Ratings públicos — <code>imdb</code> é decimal (ex: <code>8.7</code>), <code>tomato</code>/<code>popcorn</code> são inteiros percentuais (ex: <code>95</code>). Correspondência direta com <code>ImdbRating</code>, <code>Tomatometer</code>, <code>Popcornmeter</code> da sua VM.
+          </div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">progress</div>
+          <div class="ph-desc">
+            Objeto <code>&#123; watched: 14, total: 19 &#125;</code> — só presente em séries em andamento. Mapeia para <code>EpisodiosAssistidos</code> / <code>TotalEpisodios</code>.
+          </div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">user</div>
+          <div class="ph-desc">
+            Nota do usuário em estrelas (1–5). <code>null</code> se não avaliado. Corresponde a <code>EstrelaUsuario</code>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="placeholder-card">
+      <div class="placeholder-head">
+        <div>
+          <div class="placeholder-file">src/data.jsx → STATS&#123;&#125;</div>
+          <div class="placeholder-scope">Objeto de estatísticas do usuário — usado em StatsScreen</div>
+        </div>
+        <span class="tree-badge badge-placeholder">PLACEHOLDER</span>
+      </div>
+      <div class="placeholder-body">
+        <div class="ph-row">
+          <div class="ph-key">horasAssistidas</div>
+          <div class="ph-desc">Total de horas assistidas (inteiro). Exibido como hero no variant B. Vem do seu <code>EstatisticasVM.HorasAssistidas</code>.</div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">generos[]</div>
+          <div class="ph-desc">
+            Array <code>&#123; name, count, pct &#125;</code> — distribuição de gêneros. Precisa ser calculado no backend ou derivado dos gêneros das mídias. Não existe ainda na sua VM.
+            <div class="ph-example">generos: [
+  &#123; name: 'Drama', count: 42, pct: 38 &#125;,
+  &#123; name: 'Sci-Fi', count: 28, pct: 25 &#125;,
+  ...
+]</div>
+          </div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">atividade[]</div>
+          <div class="ph-desc">12 pontos mensais de atividade <code>&#123; m: 'Mai', v: 8 &#125;</code> para o gráfico de barras. Precisará de endpoint próprio.</div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">topRated[]</div>
+          <div class="ph-desc">Array de IDs das mídias com maior nota do usuário. Resolvido localmente via <code>FIND_MEDIA(id)</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYNC_DATA -->
+    <div class="placeholder-card">
+      <div class="placeholder-head">
+        <div>
+          <div class="placeholder-file">src/data.jsx → SYNC_DATA&#123;&#125;</div>
+          <div class="placeholder-scope">Estado de sincronização — usado em SyncScreen (4 abas)</div>
+        </div>
+        <span class="tree-badge badge-placeholder">PLACEHOLDER</span>
+      </div>
+      <div class="placeholder-body">
+        <div class="ph-row">
+          <div class="ph-key">pendentes[]</div>
+          <div class="ph-desc">
+            Capturas aguardando confirmação. Cada item tem <code>capturado</code> (título bruto), <code>match</code> (título do banco), <code>confianca</code> (0–100) e <code>releases[]</code>. Mapeia para <code>AssociacaoPendenteVM</code>.
+          </div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">logs[]</div>
+          <div class="ph-desc">Array de logs: <code>&#123; tipo: 'sucesso'|'erro'|'aviso'|'info', data, msg &#125;</code>. Vem de <code>LogCaptura</code>.</div>
+        </div>
+        <div class="ph-row">
+          <div class="ph-key">diagnostico[]</div>
+          <div class="ph-desc">Resultados do parser: <code>claridade</code> (muito-claro / claro / moderado / ambiguo), <code>score</code>, <code>modo</code>, <code>resumo</code>. Mapeia para <code>DiagnosticoParserVM</code>.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── COMO NAVEGAR ─────── -->
+  <section id="navegacao">
+    <div class="section-label">03 · Navegação</div>
+    <h2 class="section-title">Interagindo com o protótipo</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Abra CineTrack.html no browser</div>
+          <div class="step-desc">O design canvas carrega automaticamente com todas as telas lado a lado. Use scroll e pan (arrastar o fundo) para navegar entre as seções <b>A · Conservador</b> e <b>B · Ousado</b>.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Abra qualquer artboard em fullscreen</div>
+          <div class="step-desc">Passe o mouse sobre um frame de celular — aparece o ícone <code>⤢</code> no canto superior direito. Clique para abrir fullscreen. Use <code>←</code> <code>→</code> para navegar entre artboards e <code>Esc</code> para fechar.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Interaja com os frames</div>
+          <div class="step-desc">Toque qualquer card de mídia para abrir o <b>Detail</b>. A bottom nav alterna entre Home, Search, Stats e Sync. Na tela Sync, as 4 abas (Status, Pendências, Logs, Diagnóstico) são clicáveis.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Use o painel de Tweaks</div>
+          <div class="step-desc">Clique no botão <code>Tweaks</code> no canto inferior da tela. Alterne a <b>densidade</b> entre Confortável e Compacto — o layout de todos os frames atualiza em tempo real.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Edite os placeholders</div>
+          <div class="step-desc">Abra <code>src/data.jsx</code> e substitua qualquer item do array <code>MEDIA</code> ou do objeto <code>STATS</code>. Recarregue o browser — nenhum build necessário.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ─────── PROMPTS ─────── -->
+  <section id="prompts">
+    <div class="section-label">04 · Prompts prontos</div>
+    <h2 class="section-title">Como pedir alterações com IA</h2>
+    <p class="section-desc">Cole estes prompts diretamente — eles já têm contexto suficiente pra qualquer IA entender a estrutura do projeto.</p>
+
+    <!-- PROMPT 1 -->
+    <div class="prompt-box" style="margin-bottom:18px">
+      <div class="prompt-box-header">
+        TROCAR PLACEHOLDER POR DADO REAL
+        <button class="copy-btn" onclick="copyPrompt(this, 1)">COPIAR</button>
+      </div>
+      <div class="prompt-box-body" id="p1">No projeto CineTrack, o arquivo <code>src/data.jsx</code> contém dados de placeholder. Quero substituir o array <code>MEDIA[]</code> pelo seguinte dado real da minha API:
+
+<b>[cole aqui o JSON retornado pela sua API]</b>
+
+Mapeie os campos assim:
+- <code>Titulo</code> → <code>title</code>
+- <code>TituloOriginal</code> → <code>original</code>
+- <code>Ano</code> → <code>year</code>
+- <code>Tipo</code> (enum: Filme=0, Serie=1) → <code>type</code> ("filme" ou "serie")
+- <code>ImdbRating</code> → <code>imdb</code>
+- <code>Tomatometer</code> → <code>tomato</code>
+- <code>Popcornmeter</code> → <code>popcorn</code>
+- <code>EstrelaUsuario</code> → <code>user</code>
+- <code>StatusDescricao</code> → <code>status</code>
+- <code>ImagemUrl ?? ImagemExibicao</code> → <code>poster</code>
+- <code>EpisodiosAssistidos</code> / <code>TotalEpisodios</code> → <code>progress.watched</code> / <code>progress.total</code>
+
+Mantenha a estrutura do arquivo idêntica; troque apenas os dados.</div>
+    </div>
+
+    <!-- PROMPT 2 -->
+    <div class="prompt-box" style="margin-bottom:18px">
+      <div class="prompt-box-header">
+        ADICIONAR NOVA TELA
+        <button class="copy-btn" onclick="copyPrompt(this, 2)">COPIAR</button>
+      </div>
+      <div class="prompt-box-body" id="p2">No projeto CineTrack, quero adicionar uma nova tela chamada <b>[nome da tela]</b>.
+
+Contexto do projeto:
+- Entry point: <code>CineTrack.html</code>
+- Telas existentes: Home, Search, Detail, Stats, Sync (em <code>src/screen-*.jsx</code>)
+- Cada tela é um componente React com props <code>variant</code> ("a" ou "b") e <code>density</code> ("comfortable" ou "compact")
+- Design tokens ficam em <code>src/primitives.jsx</code> → objeto <code>THEME</code>
+- Componentes compartilhados: <code>PhoneFrame</code>, <code>BottomNav</code>, <code>MediaCard</code>, <code>SectionHeader</code>, <code>Icon</code>
+
+Crie o arquivo <code>src/screen-[nome].jsx</code> seguindo o mesmo padrão das telas existentes. Depois:
+1. Importe-o em <code>CineTrack.html</code> como <code>&lt;script type="text/babel" src="src/screen-[nome].jsx"&gt;&lt;/script&gt;</code>
+2. Adicione o render no componente <code>Phone</code> em <code>src/app.jsx</code>
+3. Adicione um ícone na <code>BottomNav</code> em <code>src/primitives.jsx</code>
+4. Adicione dois <code>DCArtboard</code> (variant A e B) nas seções do DesignCanvas em <code>src/app.jsx</code>
+
+O conteúdo da tela deve ser: <b>[descreva aqui o que a tela faz]</b></div>
+    </div>
+
+    <!-- PROMPT 3 -->
+    <div class="prompt-box" style="margin-bottom:18px">
+      <div class="prompt-box-header">
+        AJUSTAR VISUAL DE UMA TELA
+        <button class="copy-btn" onclick="copyPrompt(this, 3)">COPIAR</button>
+      </div>
+      <div class="prompt-box-body" id="p3">No projeto CineTrack, quero ajustar a tela <b>[nome: Home / Search / Detail / Stats / Sync]</b>.
+
+O arquivo é <code>src/screen-[nome].jsx</code>.
+Há dois variants: <code>variant="a"</code> (conservador) e <code>variant="b"</code> (ousado/editorial).
+
+Tokens de design disponíveis no objeto <code>THEME</code> (em <code>src/primitives.jsx</code>):
+- Cores: <code>THEME.gold</code> (#e8b94a), <code>THEME.red</code> (#c64133), <code>THEME.bg</code>, <code>THEME.bg1</code>, <code>THEME.bg2</code>, <code>THEME.text</code>, <code>THEME.text2</code>, <code>THEME.text3</code>
+- Fontes: <code>THEME.serif</code> (Fraunces), <code>THEME.sans</code> (Inter), <code>THEME.mono</code> (JetBrains Mono)
+
+Quero que você: <b>[descreva a mudança desejada]</b>
+
+Altere apenas o variant <b>[a / b / ambos]</b>. Mantenha o restante idêntico.</div>
+    </div>
+
+    <!-- PROMPT 4 -->
+    <div class="prompt-box">
+      <div class="prompt-box-header">
+        ADICIONAR TWEAK
+        <button class="copy-btn" onclick="copyPrompt(this, 4)">COPIAR</button>
+      </div>
+      <div class="prompt-box-body" id="p4">No projeto CineTrack, quero adicionar um novo controle no painel de Tweaks.
+
+O painel fica em <code>src/app.jsx</code> no componente <code>App</code>, usando o <code>TweaksPanel</code> e <code>useTweaks()</code>.
+
+Tweaks existentes:
+- <code>density</code>: "comfortable" | "compact" → passado via prop para todos os <code>Phone</code>
+
+Quero adicionar o tweak: <b>[descreva o tweak: nome, tipo (toggle/radio/slider/select), opções possíveis e o que controla visualmente]</b>
+
+Passos:
+1. Adicione o default no objeto <code>TWEAK_DEFAULTS</code>
+2. Adicione o controle no JSX do <code>TweaksPanel</code>
+3. Passe o valor como prop para o componente <code>Phone</code>
+4. Faça o componente de tela relevante consumir a prop e mudar o visual</div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ─────── DESIGN SYSTEM ─────── -->
+  <section id="design">
+    <div class="section-label">05 · Design System</div>
+    <h2 class="section-title">Tokens e paleta</h2>
+    <p class="section-desc">Todos os valores ficam no objeto <code>THEME</code> em <code>src/primitives.jsx</code>. Edite lá para mudar o visual globalmente.</p>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+      <div class="card" style="border-color: rgba(232,185,74,.3);">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <div style="width:20px;height:20px;border-radius:4px;background:#0a0908;border:1px solid rgba(255,255,255,.2)"></div>
+          <div style="width:20px;height:20px;border-radius:4px;background:#13110f;border:1px solid rgba(255,255,255,.2)"></div>
+          <div style="width:20px;height:20px;border-radius:4px;background:#1c1916;border:1px solid rgba(255,255,255,.2)"></div>
+          <div style="width:20px;height:20px;border-radius:4px;background:#26211c;border:1px solid rgba(255,255,255,.2)"></div>
+        </div>
+        <div class="card-title">Superfícies</div>
+        <div class="card-desc"><code>bg</code> · <code>bg1</code> · <code>bg2</code> · <code>bg3</code> — camadas warm-black</div>
+      </div>
+      <div class="card" style="border-color: rgba(232,185,74,.3);">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <div style="width:20px;height:20px;border-radius:4px;background:#e8b94a"></div>
+          <div style="width:20px;height:20px;border-radius:4px;background:#c64133"></div>
+          <div style="width:20px;height:20px;border-radius:4px;background:#5fa86a"></div>
+          <div style="width:20px;height:20px;border-radius:4px;background:#e0a020"></div>
+        </div>
+        <div class="card-title">Accent</div>
+        <div class="card-desc"><code>gold</code> · <code>red</code> · <code>success</code> · <code>warning</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:6px">Fraunces</div>
+        <div class="card-desc"><code>THEME.serif</code> — títulos, displays, hero numbers. Elegância editorial.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-family:'JetBrains Mono',monospace;font-size:13px;margin-bottom:6px">JetBrains Mono</div>
+        <div class="card-desc"><code>THEME.mono</code> — metadados, ratings, labels técnicos, contadores.</div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <span>Para mudar a cor de accent do app inteiro (de dourado para, ex., azul), edite apenas <code>THEME.gold</code> em <code>src/primitives.jsx</code>. Todos os componentes herdam o valor.</span>
+    </div>
+    <div class="callout info">
+      <span class="callout-icon">✓</span>
+      <span>Os pôsteres vêm de <code>image.tmdb.org/t/p/w500/</code> — substitua pelo seu CDN trocando a função <code>POSTER()</code> no topo de <code>src/data.jsx</code>.</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+function copyPrompt(btn, n) {
+  const el = document.getElementById('p' + n);
+  const text = el.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'COPIADO ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPIAR'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+<script>
+(async () => {
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  @page { margin: 0.5cm; }\n  html, body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }\n  section, article, figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

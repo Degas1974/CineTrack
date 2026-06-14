@@ -1,0 +1,25 @@
+{
+  "Scraping": {
+    "SceneSource": {
+      "Categories": [
+        "tv",
+        "films/bluray",
+        "tv/miniseries"
+      ],
+      "MaxPagesPerCategory": 3,
+      "MaxPostsPerPage": 20,
+      "StorePostUrlOnly": true
+    }
+  },
+  "Translation": {
+    "Provider": "LibreTranslate",
+    "BaseUrl": "http://localhost:5000/",
+    "SourceLanguage": "en",
+    "TargetLanguage": "pt",
+    "ApiKey": ""
+  },
+  "ImdbDatasets": {
+    "Directory": "__CONFIGURE_IMDB_DATASET_DIRECTORY__",
+    "FallbackWebEnabled": false
+  }
+}

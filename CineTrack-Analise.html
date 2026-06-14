@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CineTrack — Análise Integrada</title>
+  <style>
+    :root {
+      --ink: #101214;
+      --muted: #5f6b7a;
+      --accent: #1a1a2e;
+      --soft: #f4f6f8;
+      --line: #e1e5ea;
+      --code: #0b1020;
+    }
+    body {
+      font-family: "Segoe UI", "Inter", Arial, sans-serif;
+      color: var(--ink);
+      margin: 40px;
+      line-height: 1.6;
+      background: #fff;
+    }
+    h1, h2, h3 {
+      color: var(--accent);
+      line-height: 1.25;
+    }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.4rem; margin-top: 28px; }
+    h3 { font-size: 1.1rem; margin-top: 22px; }
+    .icon {
+      width: 18px;
+      height: 18px;
+      vertical-align: -3px;
+      margin-right: 6px;
+    }
+    .icon-lg {
+      width: 24px;
+      height: 24px;
+      vertical-align: -5px;
+      margin-right: 8px;
+    }
+    .meta {
+      color: var(--muted);
+      background: var(--soft);
+      border: 1px solid var(--line);
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin: 12px 0 20px;
+    }
+    pre {
+      background: #0f1220;
+      color: #e8ecf2;
+      padding: 14px 16px;
+      border-radius: 10px;
+      overflow: auto;
+    }
+    code {
+      background: #f0f2f5;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: Consolas, "Courier New", monospace;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 14px 0;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th { background: var(--soft); }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+    ul, ol { margin-top: 6px; }
+    .tag {
+      display: inline-block;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1><img class="icon-lg" src="Fontawesome/duotone/clapperboard.svg" alt="">CineTrack — Análise Integrada da Solução</h1>
+  <div class="meta">
+    Documento técnico gerado a partir do código-fonte do repositório em <strong>28/01/2026</strong>.<br>
+    Este material descreve o objetivo do sistema, cada módulo, fluxos principais e o passo a passo para colocar tudo em operação.
+  </div>
+
+  <h2><img class="icon" src="Fontawesome/duotone/film.svg" alt="">Objetivo do sistema</h2>
+  <p>O <strong>CineTrack</strong> é um catálogo pessoal de filmes e séries que centraliza:</p>
+  <ul>
+    <li>registro e consulta de mídias (filmes/séries)</li>
+    <li>acompanhamento de progresso por temporada/episódio</li>
+    <li>avaliações e comentários do usuário</li>
+    <li>estatísticas de consumo</li>
+    <li>sincronização via scraping e associação assistida</li>
+  </ul>
+  <p>Em resumo: ele funciona como um hub pessoal de <strong>descoberta, acompanhamento e histórico</strong> de conteúdo audiovisual.</p>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/bolt-lightning.svg" alt="">Diferenciais atuais (confirmados no código)</h2>
+  <ul>
+    <li><strong>Scraping automatizado</strong> de lançamentos via SceneSource, com logs e status de sincronização</li>
+    <li><strong>Ratings integrados</strong> do IMDb e Rotten Tomatoes (Tomatometer/Popcornmeter) no catálogo</li>
+    <li><strong>Acesso remoto seguro</strong> via Azure Relay sem expor portas no servidor local</li>
+    <li><strong>App híbrido moderno</strong> com .NET MAUI + Blazor (UI responsiva e rápida)</li>
+  </ul>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/file-lines.svg" alt="">Itens do PDF legado (CineTrack.md.pdf) não encontrados no código atual</h2>
+  <p>O PDF legado traz recursos e arquivos que <strong>não existem</strong> no repositório atual. Para evitar confusão, eles ficam registrados aqui:</p>
+  <ul>
+    <li>Integrações com <strong>TMDB</strong> e <strong>Metacritic</strong></li>
+    <li>Serviço <strong>TituloMatcher</strong> (Levenshtein/Jaccard) para auto-associação</li>
+    <li>Scraper dedicado do <strong>Rotten Tomatoes</strong></li>
+    <li>Controllers CRUD específicos (<code>TemporadasController</code>, <code>EpisodiosController</code>)</li>
+    <li>Timer de scraping <strong>6h</strong> (o código atual usa <strong>30 minutos</strong>)</li>
+  </ul>
+  <p><em>Se quiser, posso transformar esses itens em backlog técnico com priorização.</em></p>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/diagram-project.svg" alt="">Visão geral da arquitetura</h2>
+  <pre>
+[MOBILE (MAUI + Blazor)]
+        │  HTTPS (Azure Relay + SAS)
+        ▼
+[AZURE RELAY] ──► [RelayListener (Windows Service)] ──► [CineTrack.API] ──► [SQL Server]
+                                                            ▲
+                                                            │
+                                                   [Shared (Models/Repos)]
+
+[Azure Functions] ──► [Scrapers (SceneSource/IMDb)] ──► [SQL Server]
+  </pre>
+  <ul>
+    <li><strong>CineTrack.Mobile</strong>: aplicativo MAUI/Blazor com UI e navegação local</li>
+    <li><strong>CineTrack.API</strong>: API REST (ASP.NET Core) com endpoints de mídia, usuário, sync e estatísticas</li>
+    <li><strong>CineTrack.Shared</strong>: modelos, repositórios Dapper e serviços de scraping compartilhados</li>
+    <li><strong>CineTrack.Functions</strong>: Azure Functions para scraping automático e status</li>
+    <li><strong>CineTrackRelayListener</strong>: ponte Azure Relay → API local</li>
+    <li><strong>CineTrackTokenGen</strong>: gerador de SAS token do Azure Relay</li>
+    <li><strong>SQL Server</strong>: banco com tabelas, views, SPs e dados de exemplo</li>
+  </ul>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/shield.svg" alt="">Por que Azure Relay?</h2>
+  <p>O Azure Relay permite acesso remoto ao servidor <strong>sem abrir portas</strong> no firewall.</p>
+  <p>O <strong>RelayListener</strong> abre uma conexão de saída (outbound) para a nuvem, e o app se conecta ao Relay usando um token SAS.</p>
+  <p>Resultado: o SQL Server e a API podem ficar <strong>somente na rede local</strong>, com acesso externo controlado.</p>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/layer-group.svg" alt="">Mapa rápido de projetos</h2>
+  <table>
+    <thead>
+      <tr><th>Projeto</th><th>Tipo</th><th>Papel</th><th>Tecnologias chave</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>CineTrack.API</strong></td><td>ASP.NET Core Web API</td><td>Backend REST</td><td>.NET 10, Dapper, Swagger</td></tr>
+      <tr><td><strong>CineTrack.Mobile</strong></td><td>MAUI + Blazor</td><td>App mobile</td><td>.NET MAUI, BlazorWebView</td></tr>
+      <tr><td><strong>CineTrack.Shared</strong></td><td>Class Library</td><td>Domínio e dados</td><td>Dapper, SqlClient</td></tr>
+      <tr><td><strong>CineTrack.Functions</strong></td><td>Azure Functions</td><td>Scraping agendado</td><td>Functions v4 (isolated)</td></tr>
+      <tr><td><strong>CineTrackRelayListener</strong></td><td>Worker Service</td><td>Bridge Relay → API</td><td>Azure Relay, Windows Service</td></tr>
+      <tr><td><strong>CineTrackTokenGen</strong></td><td>Console</td><td>Gera SAS token</td><td>HMACSHA256</td></tr>
+      <tr><td><strong>CineTrack-Database.sql</strong></td><td>Script SQL</td><td>Banco completo</td><td>Tabelas, Views, SPs</td></tr>
+    </tbody>
+  </table>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/sitemap.svg" alt="">Detalhamento por módulo</h2>
+
+  <h3><img class="icon" src="Fontawesome/duotone/server.svg" alt="">CineTrack.API</h3>
+  <p><strong>Papel:</strong> camada REST para consumo pelo app e para operação de sync.</p>
+  <p><strong>Principais arquivos:</strong> <code>CineTrack.API/Program.cs</code>, <code>CineTrack.API/Controllers/*.cs</code></p>
+  <p><strong>Responsabilidades:</strong></p>
+  <ul>
+    <li>servir catálogo e detalhes de mídia</li>
+    <li>gerenciar status, avaliação e progresso do usuário</li>
+    <li>expor estatísticas e logs</li>
+    <li>disparar scraping manual</li>
+  </ul>
+  <p><strong>Endpoints principais:</strong></p>
+  <ul>
+    <li><img class="icon" src="Fontawesome/duotone/list.svg" alt=""> <code>GET /api/midias</code> (filtros por status e tipo)</li>
+    <li><img class="icon" src="Fontawesome/duotone/magnifying-glass.svg" alt=""> <code>GET /api/midias/search?termo=</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/film.svg" alt=""> <code>GET /api/midias/{id}</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/list-check.svg" alt=""> <code>GET /api/midias/{id}/temporadas</code> / <code>episodios</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/check.svg" alt=""> <code>PUT /api/usuario/midia/{id}/status</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/star.svg" alt=""> <code>PUT /api/usuario/midia/{id}/nota</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/clipboard-list.svg" alt=""> <code>GET /api/estatisticas</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/arrows-rotate.svg" alt=""> <code>POST /api/sync/scraping/executar</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/route.svg" alt=""> <code>GET /health</code></li>
+  </ul>
+  <p><strong>Observações técnicas:</strong></p>
+  <ul>
+    <li>CORS liberado para qualquer origem</li>
+    <li>Swagger habilitado em dev e produção</li>
+    <li>Kestrel configurado em <code>http://localhost:5050</code> via <code>appsettings.json</code></li>
+  </ul>
+
+  <h3><img class="icon" src="Fontawesome/duotone/mobile.svg" alt="">CineTrack.Mobile</h3>
+  <p><strong>Papel:</strong> app MAUI com UI em Blazor (WebView).</p>
+  <p><strong>Principais arquivos:</strong> <code>MainPage.xaml</code>, <code>Components/Pages/*.razor</code>, <code>Services/CineTrackApiClient.cs</code></p>
+  <p><strong>Fluxo de UI:</strong> Home, Search, Detail, Stats, Sync.</p>
+  <p><strong>Integração:</strong> usa Azure Relay via <code>BaseUrl</code> e <code>SasToken</code> no header <code>ServiceBusAuthorization</code>.</p>
+  <p><strong>Observações:</strong> páginas de template (Counter/Weather) não são usadas no fluxo atual.</p>
+
+  <h3><img class="icon" src="Fontawesome/duotone/code.svg" alt="">CineTrack.Shared</h3>
+  <p><strong>Papel:</strong> biblioteca comum com modelos, enums, repositórios e scrapers.</p>
+  <p><strong>Repositórios (Dapper):</strong> Midia/Temporada/Episodio/Usuario/Sync.</p>
+  <p><strong>Scrapers:</strong> SceneSource e IMDb.</p>
+  <p><strong>Ponto de atenção:</strong> dependem do HTML externo (podem quebrar).</p>
+
+  <h3><img class="icon" src="Fontawesome/duotone/cloud.svg" alt="">CineTrack.Functions</h3>
+  <p><strong>Papel:</strong> automação de scraping e status.</p>
+  <ul>
+    <li><img class="icon" src="Fontawesome/duotone/clock.svg" alt=""> Timer a cada 30 min: <code>0 */30 * * * *</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/play.svg" alt=""> <code>POST /api/scraping/trigger</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/wave-square.svg" alt=""> <code>GET /api/scraping/status</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/route.svg" alt=""> <code>GET /api/health</code></li>
+  </ul>
+
+  <h3><img class="icon" src="Fontawesome/duotone/network-wired.svg" alt="">CineTrackRelayListener</h3>
+  <p><strong>Papel:</strong> serviço Windows que recebe requisições do Azure Relay e encaminha para a API local.</p>
+  <p><strong>Configuração atual (hardcoded):</strong> RelayConnectionString, BaseUrl (<code>http://localhost:5050</code>), HybridConnectionName.</p>
+
+  <h3><img class="icon" src="Fontawesome/duotone/key.svg" alt="">CineTrackTokenGen</h3>
+  <p><strong>Papel:</strong> gerar SAS token para o Azure Relay (expiração de 50 anos).</p>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/database.svg" alt="">Banco de dados (CineTrackDb)</h2>
+  <p><strong>Script:</strong> <code>CineTrack-Database.sql</code></p>
+  <p><strong>Tabelas principais:</strong></p>
+  <ul>
+    <li><img class="icon" src="Fontawesome/duotone/film.svg" alt=""> Midia</li>
+    <li><img class="icon" src="Fontawesome/duotone/list.svg" alt=""> Temporada</li>
+    <li><img class="icon" src="Fontawesome/duotone/list-check.svg" alt=""> Episodio</li>
+    <li><img class="icon" src="Fontawesome/duotone/user.svg" alt=""> UsuarioMidia, UsuarioEpisodio</li>
+    <li><img class="icon" src="Fontawesome/duotone/link.svg" alt=""> AssociacaoSceneSource</li>
+    <li><img class="icon" src="Fontawesome/duotone/file-lines.svg" alt=""> LogCaptura</li>
+    <li><img class="icon" src="Fontawesome/duotone/gear.svg" alt=""> Configuracao</li>
+  </ul>
+  <p><strong>Views:</strong> ViewMidiaCompleta, ViewTemporadaCompleta, ViewEpisodioCompleto, ViewAssociacoesPendentes, ViewEstatisticas.</p>
+  <p><strong>SPs:</strong> sp_ObterSugestoes, sp_MarcarEpisodioAssistido, sp_ConfirmarAssociacao, sp_RejeitarAssociacao.</p>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/arrows-rotate.svg" alt="">Fluxos principais</h2>
+
+  <h3><img class="icon" src="Fontawesome/duotone/magnifying-glass.svg" alt="">Catálogo e navegação</h3>
+  <ol>
+    <li>App chama <code>GET /api/midias</code> ou <code>search</code></li>
+    <li>API consulta <code>ViewMidiaCompleta</code></li>
+    <li>UI renderiza cards na Home/Search</li>
+  </ol>
+
+  <h3><img class="icon" src="Fontawesome/duotone/check.svg" alt="">Marcar episódio/temporada</h3>
+  <ol>
+    <li>App chama <code>POST /api/usuario/episodio/{id}/assistido</code></li>
+    <li><code>sp_MarcarEpisodioAssistido</code> atualiza episódio e status da mídia</li>
+    <li>UI atualiza progresso</li>
+  </ol>
+
+  <h3><img class="icon" src="Fontawesome/duotone/cloud-arrow-down.svg" alt="">Scraping e associação</h3>
+  <ol>
+    <li>Azure Function ou API dispara scraping</li>
+    <li>SceneSourceScraper captura itens recentes</li>
+    <li>Insere em AssociacaoSceneSource como <strong>pendente</strong></li>
+    <li>Usuário confirma/rejeita no app (Sync)</li>
+  </ol>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/gear.svg" alt="">Configurações e segredos</h2>
+  <ul>
+    <li><code>CineTrack.API/appsettings.json</code></li>
+    <li><code>CineTrack.Functions/local.settings.json</code></li>
+    <li><code>CineTrackRelayListener/RelayListenerService.cs</code> (hardcoded)</li>
+    <li><code>CineTrack.Mobile/Services/CineTrackApiClient.cs</code> (hardcoded)</li>
+  </ul>
+  <p><strong>Valores atuais:</strong> SQL Server <code>CTRAN01</code>, DB <code>CineTrackDb</code>, API <code>http://localhost:5050</code>, Azure Relay <code>cinetrack-relay.servicebus.windows.net</code>.</p>
+  <p><strong>Recomendação:</strong> mover tokens e strings para variáveis de ambiente/Secret Manager.</p>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/clipboard-list.svg" alt="">Passo a passo para rodar localmente</h2>
+
+  <h3>1) Pré-requisitos</h3>
+  <ul>
+    <li><img class="icon" src="Fontawesome/duotone/code.svg" alt=""> .NET 10 (preview)</li>
+    <li><img class="icon" src="Fontawesome/duotone/database.svg" alt=""> SQL Server (local ou remoto)</li>
+    <li><img class="icon" src="Fontawesome/duotone/cloud.svg" alt=""> Azure Functions Core Tools (opcional)</li>
+    <li><img class="icon" src="Fontawesome/duotone/mobile.svg" alt=""> .NET MAUI workload</li>
+  </ul>
+
+  <h3>2) Criar banco</h3>
+  <ol>
+    <li>Criar a base <strong>CineTrackDb</strong> no SQL Server</li>
+    <li>Executar <code>CineTrack-Database.sql</code></li>
+  </ol>
+
+  <h3>3) Configurar connection strings</h3>
+  <ul>
+    <li><code>CineTrack.API/appsettings.json</code> → <code>DefaultConnection</code></li>
+    <li><code>CineTrack.Functions/local.settings.json</code> → <code>SqlConnectionString</code></li>
+  </ul>
+
+  <h3>4) Rodar API</h3>
+  <pre><code>dotnet run --project CineTrack.API</code></pre>
+  <p>API sobe em <code>http://localhost:5050</code> e Swagger em <code>/swagger</code>.</p>
+
+  <h3>5) Rodar Functions (opcional)</h3>
+  <pre><code>dotnet run --project CineTrack.Functions</code></pre>
+
+  <h3>6) Rodar Relay Listener (opcional)</h3>
+  <pre><code>dotnet run --project CineTrackRelayListener</code></pre>
+
+  <h3>7) Gerar/atualizar SAS Token do Relay</h3>
+  <pre><code>dotnet run --project CineTrackTokenGen</code></pre>
+  <p>Copiar token para <code>CineTrack.Mobile/Services/CineTrackApiClient.cs</code>.</p>
+
+  <h3>8) Rodar Mobile</h3>
+  <pre><code>dotnet build CineTrack.Mobile</code></pre>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/server.svg" alt="">Roteiro de implantação (produção/servidor Windows)</h2>
+  <p><em>Estrutura sugerida para ambiente de servidor (sem Azure Functions).</em></p>
+
+  <h3>1) Publicar API</h3>
+  <pre><code>dotnet publish CineTrack.API -c Release -o C:\CineTrack\API</code></pre>
+
+  <h3>2) Publicar RelayListener (Windows Service)</h3>
+  <pre><code>dotnet publish CineTrackRelayListener -c Release -r win-x64 --self-contained -o C:\CineTrack\RelayListener</code></pre>
+
+  <h3>3) Instalar serviço do RelayListener</h3>
+  <p>Abra um terminal como <strong>Administrador</strong> e execute:</p>
+  <pre><code>cd C:\CineTrack\RelayListener
+.\install-service.bat</code></pre>
+
+  <h3>4) Gerar token SAS e atualizar o app</h3>
+  <pre><code>dotnet run --project CineTrackTokenGen</code></pre>
+  <p>Cole o token em <code>CineTrack.Mobile/Services/CineTrackApiClient.cs</code>.</p>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/cloud.svg" alt="">Configuração do Azure Relay (passo a passo)</h2>
+  <ol>
+    <li>Acesse o portal do Azure: <code>https://portal.azure.com</code></li>
+    <li>Crie um <strong>Relay Namespace</strong> (ex.: <code>cinetrack-relay</code>)</li>
+    <li>Crie uma <strong>Hybrid Connection</strong> chamada <code>cinetrack-bridge</code></li>
+    <li>Em <strong>Shared access policies</strong>, crie a policy <code>ListenSend</code> com permissões <strong>Listen + Send</strong></li>
+    <li>Copie a <strong>Connection string – Primary key</strong> e configure no <code>RelayListenerService.cs</code></li>
+    <li>Verifique em <em>Hybrid Connections &gt; Listeners</em> se aparece <strong>1</strong> conectado</li>
+  </ol>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/route.svg" alt="">Operação diária</h2>
+  <ul>
+    <li><img class="icon" src="Fontawesome/duotone/wave-square.svg" alt=""> Health check: <code>GET /health</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/arrows-rotate.svg" alt=""> Scraping manual: <code>POST /api/sync/scraping/executar</code></li>
+    <li><img class="icon" src="Fontawesome/duotone/list-check.svg" alt=""> Confirmar associações no menu <strong>Sync</strong> do app</li>
+    <li><img class="icon" src="Fontawesome/duotone/file-lines.svg" alt=""> Consultar logs em <code>/api/sync/logs</code></li>
+  </ul>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/triangle-exclamation.svg" alt="">Pontos de atenção</h2>
+  <ul>
+    <li><strong>Segurança:</strong> chaves do Azure Relay estão hardcoded no código</li>
+    <li><strong>Scraping:</strong> depende de HTML externo (IMDb/SceneSource podem mudar)</li>
+    <li><strong>Portas:</strong> API configurada em 5050, mas launchSettings usa 59267/59268</li>
+    <li><strong>Preview:</strong> .NET 10 exige tooling atualizado</li>
+  </ul>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/circle-xmark.svg" alt="">Troubleshooting (baseado no PDF legado)</h2>
+  <ul>
+    <li><strong>TokenMissingOrInvalid:</strong> o token SAS foi gerado com URL incorreta ou expirou → gere novamente com <code>https://cinetrack-relay.servicebus.windows.net/cinetrack-bridge</code></li>
+    <li><strong>404 via Relay:</strong> o RelayListener não está rodando ou o <code>HybridConnectionName</code> difere do app → verifique o serviço com <code>Get-Service CineTrackRelayListener</code></li>
+  </ul>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/check.svg" alt="">Checklist rápido (operacional)</h2>
+  <ul>
+    <li>[ ] Banco criado e script aplicado</li>
+    <li>[ ] API respondendo em <code>/health</code></li>
+    <li>[ ] App conectado (Sync sem erro)</li>
+    <li>[ ] Relay Listener ativo (se uso remoto)</li>
+    <li>[ ] Scraping funcionando (logs aparecem)</li>
+  </ul>
+
+  <hr />
+
+  <h2><img class="icon" src="Fontawesome/duotone/users.svg" alt="">Glossário rápido</h2>
+  <ul>
+    <li><strong>Midia</strong>: filme ou série</li>
+    <li><strong>Temporada/Episodio</strong>: estrutura de séries</li>
+    <li><strong>AssociacaoSceneSource</strong>: item capturado aguardando validação</li>
+    <li><strong>Sync</strong>: fluxo de scraping + confirmação</li>
+  </ul>
+
+  <p><strong>Fim do documento.</strong></p>
+</body>
+</html>

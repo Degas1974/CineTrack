@@ -1,0 +1,114 @@
+@inject CineTrackApiClient ApiClient
+
+<div class="stats-page">
+    <h1><FaIcon Name="chart-pie" Size="20" /> Estatísticas</h1>
+
+    @if (loading)
+    {
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <span class="loading-text">Carregando...</span>
+        </div>
+    }
+    else
+    {
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><FaIcon Name="clapperboard" Size="28" /></div>
+                <div class="stat-value">@stats.TotalFilmes</div>
+                <div class="stat-label">Filmes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><FaIcon Name="tv-retro" Size="28" /></div>
+                <div class="stat-value">@stats.TotalSeries</div>
+                <div class="stat-label">Séries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><FaIcon Name="film-simple" Size="28" /></div>
+                <div class="stat-value">@stats.TotalEpisodios</div>
+                <div class="stat-label">Episódios</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><FaIcon Name="circle-check" Size="28" /></div>
+                <div class="stat-value">@stats.EpisodiosAssistidos</div>
+                <div class="stat-label">Eps. Assistidos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><FaIcon Name="clock" Size="28" /></div>
+                <div class="stat-value">@FormatHoras(stats.HorasAssistidas)</div>
+                <div class="stat-label">Tempo Assistido</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><FaIcon Name="trophy" Size="28" /></div>
+                <div class="stat-value">@stats.SeriesCompletas</div>
+                <div class="stat-label">Séries Completas</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title"><FaIcon Name="chart-simple" Size="14" /> Distribuição por Status</div>
+            <div class="bar-chart">
+                <div class="bar-item">
+                    <span class="bar-label">Assistindo</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: @GetPercent(stats.SeriesEmAndamento, Total)%">
+                            @stats.SeriesEmAndamento
+                        </div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <span class="bar-label">Completos</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: @GetPercent(stats.SeriesCompletas + stats.FilmesAssistidos, Total)%">
+                            @(stats.SeriesCompletas + stats.FilmesAssistidos)
+                        </div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <span class="bar-label">Pendentes</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: @GetPercent(stats.AssociacoesPendentes, Total)%">
+                            @stats.AssociacoesPendentes
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (stats.UltimaCaptura.HasValue)
+        {
+            <div class="section-header">
+                <span class="section-title"><FaIcon Name="arrows-rotate" Size="14" /> Última Sincronização</span>
+            </div>
+            <p style="color: var(--text-2); font-size: 13px;">
+                @stats.UltimaCaptura.Value.ToString("dd/MM/yyyy 'às' HH:mm")
+            </p>
+        }
+    }
+</div>
+
+@code {
+    private bool loading = true;
+    private EstatisticasVM stats = new();
+
+    private int Total => stats.TotalFilmes + stats.TotalSeries;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            stats = await ApiClient.GetEstatisticasAsync();
+        }
+        finally { loading = false; }
+    }
+
+    private double GetPercent(int value, int total) => total > 0 ? (double)value / total * 100 : 0;
+
+    private string FormatHoras(int horas)
+    {
+        if (horas < 24) return $"{horas}h";
+        var dias = horas / 24;
+        var h = horas % 24;
+        return $"{dias}d {h}h";
+    }
+}

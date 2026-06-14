@@ -1,0 +1,67 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Temp files
+.tmp.driveupload/
+*.tmp
+*~
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+
+# MAUI / Xamarin
+*.apk
+*.ipa
+*.dSYM/
+
+# User-specific files
+*.rsuser
+*.sln.docstates
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Process logs
+api-*.err.txt
+api-*.out.txt
+
+# Junk / IDE artifacts
+_nul
+.Planos Cursor/
+.specstory/
+*.rar
+*.zip
+
+# Node
+node_modules/
+
+# Secrets
+secrets.json
+local.settings.json

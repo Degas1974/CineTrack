@@ -1,0 +1,30 @@
+/* CineTrack Mockups — Cinema Noir design tokens */
+:root {
+  --bg: #0A0A0A;
+  --bg-2: #141414;
+  --surface: #161616;
+  --surface-2: #1D1D1D;
+  --border: rgba(245, 241, 232, 0.08);
+  --border-strong: rgba(212, 168, 75, 0.35);
+  --text: #F5F1E8;
+  --text-2: #8B8680;
+  --text-3: #555049;
+  --gold: #D4A84B;
+  --gold-dim: rgba(212, 168, 75, 0.6);
+  --imdb: #F5C518;
+  --tomato: #FA320A;
+  --popcorn: #F8D64E;
+  --success: #6ea870;
+  --warning: #d4a84b;
+  --danger: #b85040;
+  --info: #8b8680;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius-sm: 3px;
+  --radius: 4px;
+  --radius-lg: 8px;
+  --nav-height: 78px;
+  --phone-w: 430px;
+  --phone-h: 932px;
+}

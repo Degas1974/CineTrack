@@ -1,0 +1,704 @@
+@inject CineTrackApiClient ApiClient
+@using Microsoft.Maui.Storage
+@using System.Text.RegularExpressions
+
+<div class="sync-page">
+    <h1><FaIcon Name="arrows-rotate" Size="20" /> Sincronização</h1>
+
+    @if (isLoading)
+    {
+        <div class="sync-status skeleton-card">
+            <div class="skeleton skeleton-icon"></div>
+            <div class="sync-text skeleton-stack">
+                <div class="skeleton skeleton-line lg"></div>
+                <div class="skeleton skeleton-line sm"></div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="sync-status @(isConnected ? "" : "error") @(pendentes.Any() ? "pending" : "")">
+            <div class="sync-icon">
+                @if (!isConnected)
+                {
+                    <FaIcon Name="circle-xmark" Size="20" Color="#e74c3c" />
+                }
+                else if (pendentes.Any())
+                {
+                    <FaIcon Name="triangle-exclamation" Size="20" Color="var(--gold)" />
+                }
+                else
+                {
+                    <FaIcon Name="circle-check" Size="20" Color="#2ecc71" />
+                }
+            </div>
+            <div class="sync-text">
+                @if (!isConnected)
+                {
+                    <span>Sem conexão com o servidor</span>
+                }
+                else if (pendentes.Any())
+                {
+                    <span>@pendentes.Count() associações pendentes</span>
+                }
+                else
+                {
+                    <span>Tudo sincronizado!</span>
+                }
+            </div>
+            @if (ultimaSync.HasValue)
+            {
+                <div class="sync-time">Última sync: @ultimaSync.Value.ToString("dd/MM/yyyy HH:mm")</div>
+            }
+        </div>
+    }
+
+    <button class="sync-btn" @onclick="ExecutarScraping" disabled="@(syncing || isLoading)">
+        @if (syncing)
+        {
+            <FaIcon Name="arrows-rotate" Size="16" />
+            <span>Sincronizando...</span>
+        }
+        else
+        {
+            <FaIcon Name="arrows-rotate" Size="16" />
+            <span>Sincronizar Agora</span>
+        }
+    </button>
+
+    @if (scrapingResult != null)
+    {
+        <div class="@(scrapingResult.Sucesso ? "sync-status" : "sync-status error")" style="margin-bottom: 20px;">
+            <div class="sync-icon">
+                @if (scrapingResult.Sucesso)
+                {
+                    <FaIcon Name="circle-check" Size="20" Color="#2ecc71" />
+                }
+                else
+                {
+                    <FaIcon Name="circle-xmark" Size="20" Color="#e74c3c" />
+                }
+            </div>
+            <div class="sync-text">@scrapingResult.Mensagem</div>
+            @if (scrapingResult.Sucesso)
+            {
+                <div class="sync-time">
+                    Novos: @scrapingResult.NovosItens | Atualizados: @scrapingResult.ItensAtualizados
+                </div>
+            }
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="db-stats">
+            @for (var i = 0; i < 3; i++)
+            {
+                <div class="db-stat skeleton-card">
+                    <div class="skeleton skeleton-stat-value"></div>
+                    <div class="skeleton skeleton-stat-label"></div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="db-stats">
+            <div class="db-stat">
+                <div class="db-stat-value">@dbStats.TotalFilmes</div>
+                <div class="db-stat-label">Filmes</div>
+            </div>
+            <div class="db-stat">
+                <div class="db-stat-value">@dbStats.TotalSeries</div>
+                <div class="db-stat-label">Séries</div>
+            </div>
+            <div class="db-stat">
+                <div class="db-stat-value">@dbStats.TotalEpisodios</div>
+                <div class="db-stat-label">Episódios</div>
+            </div>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="section-header skeleton-section-header">
+            <div class="skeleton skeleton-line md"></div>
+            <div class="skeleton skeleton-pill"></div>
+        </div>
+        <div class="pending-list">
+            @for (var i = 0; i < 2; i++)
+            {
+                <div class="pending-item skeleton-card skeleton-list-card">
+                    <div class="skeleton-stack wide">
+                        <div class="skeleton skeleton-line lg"></div>
+                        <div class="skeleton skeleton-line sm"></div>
+                    </div>
+                    <div class="skeleton-row">
+                        <div class="skeleton skeleton-button"></div>
+                        <div class="skeleton skeleton-button"></div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="section-header skeleton-section-header" style="margin-top: 30px;">
+            <div class="skeleton skeleton-line md"></div>
+            <div class="skeleton skeleton-pill"></div>
+        </div>
+        <div class="diagnostic-filters">
+            @for (var i = 0; i < 4; i++)
+            {
+                <div class="diagnostic-filter-chip skeleton-card">
+                    <div class="skeleton skeleton-chip-text"></div>
+                    <div class="skeleton skeleton-chip-count"></div>
+                </div>
+            }
+        </div>
+        <div class="diagnostic-overview">
+            @for (var i = 0; i < 4; i++)
+            {
+                <div class="diagnostic-overview-card skeleton-card">
+                    <div class="skeleton skeleton-overview-value"></div>
+                    <div class="skeleton skeleton-overview-label"></div>
+                </div>
+            }
+        </div>
+        <div class="pending-list">
+            @for (var i = 0; i < 3; i++)
+            {
+                <div class="pending-item diagnostic-card skeleton-card skeleton-diagnostic-card">
+                    <div class="skeleton skeleton-meta"></div>
+                    <div class="diagnostic-header-row">
+                        <div class="skeleton skeleton-line lg"></div>
+                        <div class="diagnostic-header-tags">
+                            <div class="skeleton skeleton-pill"></div>
+                            <div class="skeleton skeleton-pill"></div>
+                        </div>
+                    </div>
+                    <div class="diagnostic-details">
+                        <div class="skeleton skeleton-summary"></div>
+                        <div class="skeleton skeleton-line lg"></div>
+                        <div class="skeleton skeleton-line md"></div>
+                        <div class="diagnostic-meta">
+                            <div class="skeleton skeleton-pill"></div>
+                            <div class="skeleton skeleton-pill"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (!isLoading && pendentes.Any())
+    {
+        <div class="section-header">
+            <span class="section-title"><FaIcon Name="triangle-exclamation" Size="14" /> Pendentes de Associação</span>
+            <span class="section-link">@pendentes.Count() itens</span>
+        </div>
+
+        <div class="pending-list">
+            @foreach (var grupo in pendentesAgrupados.Take(10))
+            {
+                var principal = grupo.First();
+                <div class="pending-item">
+                    <div class="pending-source">@principal.TituloCapturado</div>
+                    <div class="pending-match">
+                        <span class="pending-title">→ @(principal.MidiaTitulo ?? "???")</span>
+                        <span class="pending-confidence @(principal.Confianca < 70 ? "low" : "")">
+                            @principal.Confianca.ToString("0")%
+                        </span>
+                    </div>
+
+                    @if (grupo.Count() > 1)
+                    {
+                        <div class="sync-time">Categorias encontradas: @grupo.Count()</div>
+                    }
+
+                    <div class="pending-list" style="margin-top: 12px;">
+                        @foreach (var opcao in grupo.OrderByDescending(GetPreferenciaReleaseScore).ThenByDescending(item => item.Confianca))
+                        {
+                            <div class="pending-item" style="margin: 8px 0 0 0; background: rgba(255,255,255,0.02);">
+                                <div class="pending-match">
+                                    <span class="pending-title">@GetCategoriaLabel(opcao)</span>
+                                    <span class="pending-confidence @(opcao.Confianca < 70 ? "low" : "")">
+                                        @opcao.Confianca.ToString("0")%
+                                    </span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(opcao.TituloBrutoCapturado))
+                                {
+                                    <div class="sync-time">@opcao.TituloBrutoCapturado</div>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(GetTituloBrutoFallback(opcao)))
+                                {
+                                    <div class="sync-time">@GetTituloBrutoFallback(opcao)</div>
+                                }
+                                <div class="pending-actions">
+                                    <button class="pending-btn confirm" @onclick="() => Confirmar(opcao.Id)">
+                                        <FaIcon Name="check" Size="12" /> Importar esta
+                                    </button>
+                                    <button class="pending-btn reject" @onclick="() => Rejeitar(opcao.Id)">
+                                        <FaIcon Name="xmark" Size="12" /> Rejeitar
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (!isLoading && resolvidasAgrupadas.Any())
+    {
+        <div class="section-header" style="margin-top: 30px;">
+            <span class="section-title"><FaIcon Name="circle-check" Size="14" /> Escolhas Recentes</span>
+            <span class="section-link">@resolvidasAgrupadas.Count() grupos</span>
+        </div>
+
+        <div class="pending-list">
+            @foreach (var grupo in resolvidasAgrupadas.Take(10))
+            {
+                var principal = grupo.First();
+                var escolhida = grupo.FirstOrDefault(item => item.FoiSelecionada) ?? principal;
+
+                <div class="pending-item">
+                    <div class="pending-source">@principal.TituloCapturado</div>
+                    <div class="pending-match">
+                        <span class="pending-title">→ @(principal.MidiaTitulo ?? "???")</span>
+                        <span class="pending-confidence">@escolhida.Confianca.ToString("0")%</span>
+                    </div>
+
+                    <div class="sync-time">Release escolhida: @GetCategoriaLabel(escolhida)</div>
+                    <div class="sync-time">Opções no grupo: @grupo.Count()</div>
+
+                    <div class="pending-list" style="margin-top: 12px;">
+                        @foreach (var opcao in grupo.OrderByDescending(item => item.FoiSelecionada).ThenByDescending(GetPreferenciaReleaseScore).ThenByDescending(item => item.Confianca))
+                        {
+                            <div class="pending-item" style="margin: 8px 0 0 0; background: rgba(255,255,255,0.02);">
+                                <div class="pending-match">
+                                    <span class="pending-title">@GetCategoriaLabel(opcao)</span>
+                                    <span class="pending-confidence @(opcao.FoiSelecionada ? string.Empty : "low")">
+                                        @(opcao.FoiSelecionada ? "Selecionada" : "Alternativa")
+                                    </span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(opcao.TituloBrutoCapturado))
+                                {
+                                    <div class="sync-time">@opcao.TituloBrutoCapturado</div>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(GetTituloBrutoFallback(opcao)))
+                                {
+                                    <div class="sync-time">@GetTituloBrutoFallback(opcao)</div>
+                                }
+                                <div class="pending-actions">
+                                    @if (opcao.FoiSelecionada)
+                                    {
+                                        <button class="pending-btn confirm" disabled>
+                                            <FaIcon Name="check" Size="12" /> Selecionada
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="pending-btn confirm" @onclick="() => SelecionarResolvida(opcao.Id)">↺ Trocar para esta</button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (!isLoading && logs.Any())
+    {
+        <div class="section-header" style="margin-top: 30px;">
+            <span class="section-title"><FaIcon Name="align-left" Size="14" /> Logs Recentes</span>
+        </div>
+
+        <div class="pending-list">
+            @foreach (var log in logs.Take(10))
+            {
+                <div class="pending-item" style="border-left-color: @GetLogColor(log.Tipo);">
+                    <div class="pending-source">@log.DataLog.ToString("dd/MM HH:mm")</div>
+                    <div class="pending-title">
+                        @if (log.Tipo == TipoLog.Sucesso)
+                        {
+                            <FaIcon Name="circle-check" Size="12" Color="#2ecc71" />
+                        }
+                        else if (log.Tipo == TipoLog.Erro)
+                        {
+                            <FaIcon Name="circle-xmark" Size="12" Color="#e74c3c" />
+                        }
+                        else if (log.Tipo == TipoLog.Aviso)
+                        {
+                            <FaIcon Name="triangle-exclamation" Size="12" Color="#f1c40f" />
+                        }
+                        else
+                        {
+                            <FaIcon Name="circle-info" Size="12" Color="var(--gold)" />
+                        }
+                        @log.Mensagem
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (!isLoading && diagnosticos.Any())
+    {
+        <div class="section-header" style="margin-top: 30px;">
+            <span class="section-title"><FaIcon Name="stethoscope" Size="14" /> Diagnóstico do Parser</span>
+            <span class="section-link">@diagnosticosFiltrados.Count() de @diagnosticos.Count() itens</span>
+        </div>
+
+        <div class="diagnostic-filters">
+            @foreach (var filtro in DiagnosticFilters)
+            {
+                <button class="diagnostic-filter-chip @(filtroAtual == filtro.Key ? "active" : string.Empty)"
+                        @onclick="() => SelecionarFiltro(filtro.Key)">
+                    <span>@filtro.Label</span>
+                    <span class="diagnostic-filter-count">@GetFilterCount(filtro.Key)</span>
+                </button>
+            }
+        </div>
+
+        <div class="diagnostic-overview">
+            <button class="diagnostic-overview-card @(GetOverviewCardClass(DiagnosticFilterKeys.Todos))"
+                    @onclick="() => SelecionarFiltro(DiagnosticFilterKeys.Todos)">
+                <span class="diagnostic-overview-value">@diagnosticos.Count()</span>
+                <span class="diagnostic-overview-label">Total</span>
+            </button>
+            <button class="diagnostic-overview-card very-clear @(GetOverviewCardClass(DiagnosticFilterKeys.MuitoClaros))"
+                    @onclick="() => SelecionarFiltro(DiagnosticFilterKeys.MuitoClaros)">
+                <span class="diagnostic-overview-value">@diagnosticos.Count(d => d.ClarezaScore >= 110)</span>
+                <span class="diagnostic-overview-label">Muito claros</span>
+            </button>
+            <button class="diagnostic-overview-card clear @(GetOverviewCardClass(DiagnosticFilterKeys.Claros))"
+                    @onclick="() => SelecionarFiltro(DiagnosticFilterKeys.Claros)">
+                <span class="diagnostic-overview-value">@diagnosticos.Count(d => d.ClarezaScore >= 90 && d.ClarezaScore < 110)</span>
+                <span class="diagnostic-overview-label">Claros</span>
+            </button>
+            <button class="diagnostic-overview-card ambiguous @(GetOverviewCardClass(DiagnosticFilterKeys.Ambiguos))"
+                    @onclick="() => SelecionarFiltro(DiagnosticFilterKeys.Ambiguos)">
+                <span class="diagnostic-overview-value">@diagnosticos.Count(d => d.IsAmbiguo)</span>
+                <span class="diagnostic-overview-label">Ambíguos</span>
+            </button>
+        </div>
+
+        @if (diagnosticosFiltrados.Any())
+        {
+            <div class="pending-list">
+                @foreach (var diagnostico in diagnosticosFiltrados)
+                {
+                    <div class="pending-item diagnostic-card @(diagnostico.IsAmbiguo ? "ambiguous" : string.Empty)" style="border-left-color: @(diagnostico.IsAmbiguo ? "#f39c12" : "#8e44ad");">
+                        <div class="pending-source">@diagnostico.DataLog.ToString("dd/MM HH:mm")</div>
+                        <div class="diagnostic-header-row">
+                            <div class="pending-title">@diagnostico.Mensagem</div>
+                            <div class="diagnostic-header-tags">
+                                <span class="diagnostic-clarity @GetDiagnosticClarityClass(diagnostico)">@diagnostico.ClarezaDescricao</span>
+                                <span class="diagnostic-badge @GetDiagnosticBadgeClass(diagnostico.ModoParsing)">@diagnostico.ModoParsing</span>
+                            </div>
+                        </div>
+                        <div class="diagnostic-details">
+                            <div class="diagnostic-summary">@diagnostico.ResumoHumano</div>
+                            @if (diagnostico.IsAmbiguo)
+                            {
+                                <div class="diagnostic-warning">
+                                    <FaIcon Name="triangle-exclamation" Size="12" /> Parser caiu em heurística genérica; vale revisar essa captura manualmente.
+                                </div>
+                            }
+                            <div class="diagnostic-title-row">
+                                <span class="diagnostic-label">Título</span>
+                                <span class="diagnostic-value">@diagnostico.Titulo</span>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(diagnostico.TituloEpisodio))
+                            {
+                                <div class="diagnostic-title-row">
+                                    <span class="diagnostic-label">Episódio</span>
+                                    <span class="diagnostic-value">@diagnostico.TituloEpisodio</span>
+                                </div>
+                            }
+                            <div class="diagnostic-meta">
+                                @if (diagnostico.Ano.HasValue)
+                                {
+                                    <span class="diagnostic-pill">Ano @diagnostico.Ano</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(diagnostico.CodigoEpisodio))
+                                {
+                                    <span class="diagnostic-pill">@diagnostico.CodigoEpisodio</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(diagnostico.LinkSceneSource))
+                            {
+                                <div class="diagnostic-link-row">
+                                    <a class="diagnostic-link" href="@diagnostico.LinkSceneSource" target="_blank">Abrir fonte</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="diagnostic-empty-state">
+                <div class="diagnostic-empty-icon"><FaIcon Name="binoculars" Size="44" /></div>
+                <div class="diagnostic-empty-title">Nenhum diagnóstico neste filtro</div>
+                <div class="diagnostic-empty-text">Troque o filtro ou execute uma nova sincronização para gerar mais capturas diagnosticadas.</div>
+                @if (filtroAtual != DiagnosticFilterKeys.Todos)
+                {
+                    <button class="diagnostic-empty-action" @onclick="() => SelecionarFiltro(DiagnosticFilterKeys.Todos)">Ver todos</button>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private const string DiagnosticFilterPreferenceKey = "sync.diagnostic.filter";
+    private bool isConnected = false;
+    private bool isLoading = true;
+    private bool syncing = false;
+    private DateTime? ultimaSync;
+    private ScrapingResult? scrapingResult;
+    private string filtroAtual = DiagnosticFilterKeys.Todos;
+    private EstatisticasVM dbStats = new();
+    private IEnumerable<AssociacaoPendenteVM> pendentes = [];
+    private IEnumerable<IGrouping<string, AssociacaoPendenteVM>> pendentesAgrupados => pendentes
+        .GroupBy(item => item.GrupoFallback)
+        .OrderByDescending(group => group.Max(item => item.DataCaptura))
+        .ThenByDescending(group => group.Max(GetPreferenciaReleaseScore));
+    private IEnumerable<AssociacaoPendenteVM> resolvidas = [];
+    private IEnumerable<IGrouping<string, AssociacaoPendenteVM>> resolvidasAgrupadas => resolvidas
+        .GroupBy(item => item.GrupoFallback)
+        .Where(group => group.Count() > 1)
+        .Select(OrdenarGrupoResolvido)
+        .OrderByDescending(group => group.Max(item => item.DataConfirmacao ?? item.DataCaptura));
+    private IEnumerable<LogCaptura> logs = [];
+    private IEnumerable<DiagnosticoParserVM> diagnosticos = [];
+    private IEnumerable<DiagnosticoParserVM> diagnosticosFiltrados => diagnosticos.Where(MatchesFilter);
+
+    private static readonly (string Key, string Label)[] DiagnosticFilters =
+    [
+        (DiagnosticFilterKeys.Todos, "Todos"),
+        (DiagnosticFilterKeys.MuitoClaros, "Muito claros"),
+        (DiagnosticFilterKeys.Claros, "Claros"),
+        (DiagnosticFilterKeys.Ambiguos, "Ambíguos")
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        filtroAtual = RestaurarFiltroSalvo();
+        isConnected = await ApiClient.CheckHealthAsync();
+        if (isConnected) await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            dbStats = await ApiClient.GetEstatisticasAsync();
+            ultimaSync = await ApiClient.GetUltimaSyncAsync();
+            pendentes = await ApiClient.GetAssociacoesPendentesAsync();
+            resolvidas = await ApiClient.GetAssociacoesResolvidasAsync(150);
+            logs = await ApiClient.GetLogsAsync(20);
+            diagnosticos = (await ApiClient.GetLogsDiagnosticoAsync(10))
+                .OrderByDescending(d => d.ClarezaScore)
+                .ThenByDescending(d => d.DataLog)
+                .ToArray();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelecionarFiltro(string filtro)
+    {
+        if (!IsValidFilter(filtro) || filtroAtual == filtro)
+        {
+            return;
+        }
+
+        filtroAtual = filtro;
+        Preferences.Default.Set(DiagnosticFilterPreferenceKey, filtroAtual);
+    }
+
+    private async Task ExecutarScraping()
+    {
+        syncing = true;
+        scrapingResult = null;
+        try
+        {
+            scrapingResult = await ApiClient.ExecutarScrapingAsync();
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            scrapingResult = new ScrapingResult { Sucesso = false, Mensagem = ex.Message };
+        }
+        finally { syncing = false; }
+    }
+
+    private async Task Confirmar(int id)
+    {
+        await ApiClient.ConfirmarAssociacaoAsync(id);
+        await LoadData();
+    }
+
+    private async Task Rejeitar(int id)
+    {
+        await ApiClient.RejeitarAssociacaoAsync(id);
+        await LoadData();
+    }
+
+    private async Task SelecionarResolvida(int id)
+    {
+        await ApiClient.SelecionarAssociacaoAsync(id);
+        await LoadData();
+    }
+
+    private static IGrouping<string, AssociacaoPendenteVM> OrdenarGrupoResolvido(IGrouping<string, AssociacaoPendenteVM> grupo)
+    {
+        return new OrderedGrouping(grupo.Key, grupo
+            .OrderByDescending(item => item.FoiSelecionada)
+            .ThenByDescending(GetPreferenciaReleaseScore)
+            .ThenByDescending(item => item.DataConfirmacao ?? item.DataCaptura));
+    }
+
+    private static int GetPreferenciaReleaseScore(AssociacaoPendenteVM opcao)
+    {
+        var source = opcao.TituloBrutoCapturado
+            ?? opcao.CategoriaCapturada
+            ?? GetTituloBrutoFallback(opcao)
+            ?? string.Empty;
+
+        var score = opcao.ReleaseScore;
+
+        score += Regex.IsMatch(source, @"\b1080p\b", RegexOptions.IgnoreCase) ? 100 : 0;
+        score += Regex.IsMatch(source, @"\b(2160p|4K)\b", RegexOptions.IgnoreCase) ? 70 : 0;
+        score += Regex.IsMatch(source, @"\b720p\b", RegexOptions.IgnoreCase) ? 40 : 0;
+
+        return score;
+    }
+
+    private static string GetCategoriaLabel(AssociacaoPendenteVM opcao)
+    {
+        if (!string.IsNullOrWhiteSpace(opcao.CategoriaCapturada))
+        {
+            return opcao.CategoriaCapturada;
+        }
+
+        var fallback = GetTituloBrutoFallback(opcao);
+        if (string.IsNullOrWhiteSpace(fallback))
+        {
+            return "Release padrão";
+        }
+
+        var tokens = new List<string>();
+        var resolution = Regex.Match(fallback, @"\b(2160p|4K|1080p|720p)\b", RegexOptions.IgnoreCase);
+        var source = Regex.Match(fallback, @"\b(BluRay|WEB-DL|WEBRip|HDTV|PDTV|BDRip|HDRip|BRRip)\b", RegexOptions.IgnoreCase);
+        var provider = Regex.Match(fallback, @"\b(DSNP|AMZN|NF|HULU|ATVP|MAX)\b", RegexOptions.IgnoreCase);
+        var codec = Regex.Match(fallback, @"\b(x265|x264|H264|HEVC|AV1)\b", RegexOptions.IgnoreCase);
+
+        if (resolution.Success) tokens.Add(resolution.Value.ToUpperInvariant());
+        if (source.Success) tokens.Add(source.Value);
+        if (provider.Success) tokens.Add(provider.Value.ToUpperInvariant());
+        if (codec.Success) tokens.Add(codec.Value.ToUpperInvariant());
+
+        return tokens.Count > 0 ? string.Join(" • ", tokens) : "Release padrão";
+    }
+
+    private static string? GetTituloBrutoFallback(AssociacaoPendenteVM opcao)
+    {
+        if (string.IsNullOrWhiteSpace(opcao.LinkSceneSource))
+        {
+            return null;
+        }
+
+        if (!Uri.TryCreate(opcao.LinkSceneSource, UriKind.Absolute, out var uri))
+        {
+            return null;
+        }
+
+        var slug = uri.Segments.LastOrDefault()?.Trim('/');
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return null;
+        }
+
+        return slug.Replace('-', ' ');
+    }
+
+    private string GetLogColor(TipoLog tipo) => tipo switch
+    {
+        TipoLog.Erro => "#e74c3c",
+        TipoLog.Aviso => "#f1c40f",
+        TipoLog.Sucesso => "#2ecc71",
+        _ => "#667eea"
+    };
+
+    private static string GetDiagnosticBadgeClass(string? modoParsing) => modoParsing switch
+    {
+        "Data" => "date",
+        "SxxEyy" => "episode",
+        "Temporada" => "season",
+        _ => "generic"
+    };
+
+    private static string GetDiagnosticClarityClass(DiagnosticoParserVM diagnostico) => diagnostico.ClarezaScore switch
+    {
+        >= 110 => "very-clear",
+        >= 90 => "clear",
+        >= 60 => "moderate",
+        _ => "ambiguous"
+    };
+
+    private int GetFilterCount(string filtro) => diagnosticos.Count(d => MatchesFilter(d, filtro));
+
+    private string GetOverviewCardClass(string filtro) => filtroAtual == filtro ? "active" : string.Empty;
+
+    private static string RestaurarFiltroSalvo()
+    {
+        var filtroSalvo = Preferences.Default.Get(DiagnosticFilterPreferenceKey, DiagnosticFilterKeys.Todos);
+        return IsValidFilter(filtroSalvo) ? filtroSalvo : DiagnosticFilterKeys.Todos;
+    }
+
+    private bool MatchesFilter(DiagnosticoParserVM diagnostico) => MatchesFilter(diagnostico, filtroAtual);
+
+    private static bool MatchesFilter(DiagnosticoParserVM diagnostico, string filtro) => filtro switch
+    {
+        DiagnosticFilterKeys.MuitoClaros => diagnostico.ClarezaScore >= 110,
+        DiagnosticFilterKeys.Claros => diagnostico.ClarezaScore >= 90 && diagnostico.ClarezaScore < 110,
+        DiagnosticFilterKeys.Ambiguos => diagnostico.IsAmbiguo,
+        _ => true
+    };
+
+    private static bool IsValidFilter(string? filtro)
+    {
+        return filtro is DiagnosticFilterKeys.Todos
+            or DiagnosticFilterKeys.MuitoClaros
+            or DiagnosticFilterKeys.Claros
+            or DiagnosticFilterKeys.Ambiguos;
+    }
+
+    private sealed class OrderedGrouping(string key, IEnumerable<AssociacaoPendenteVM> items) : IGrouping<string, AssociacaoPendenteVM>
+    {
+        public string Key { get; } = key;
+
+        public IEnumerator<AssociacaoPendenteVM> GetEnumerator() => items.GetEnumerator();
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private static class DiagnosticFilterKeys
+    {
+        public const string Todos = "todos";
+        public const string MuitoClaros = "muito-claros";
+        public const string Claros = "claros";
+        public const string Ambiguos = "ambiguos";
+    }
+}

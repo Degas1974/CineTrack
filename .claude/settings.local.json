@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(git -C \"c:/CineTrack.Net10\" remote add:*)",
+      "Bash(git -C \"c:/CineTrack.Net10\" add -A)",
+      "Bash(git -C \"c:/CineTrack.Net10\" branch -M main)",
+      "Bash(git -C \"c:/CineTrack.Net10\" push -u origin main)"
+    ]
+  }
+}

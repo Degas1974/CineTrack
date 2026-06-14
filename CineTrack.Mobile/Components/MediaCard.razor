@@ -1,0 +1,66 @@
+@using CineTrack.Shared.Models
+
+<div class="media-card" @onclick="HandleClick">
+    <div class="media-poster">
+        @if (!string.IsNullOrEmpty(GetPosterUrl(Midia)))
+        {
+            <img src="@GetPosterUrl(Midia)" alt="@Midia.Titulo" />
+        }
+        else
+        {
+            <span class="poster-placeholder">
+                <FaIcon Name="@(Midia.Tipo == TipoMidia.Serie ? "tv-retro" : "clapperboard")" Size="32" />
+            </span>
+        }
+    </div>
+    <div class="media-info">
+        <div class="media-title">@Midia.Titulo</div>
+        <div class="media-year">@Midia.Ano</div>
+        <div class="ratings-grid">
+            <div class="rating-item rating-imdb">
+                <FaIcon Name="star" Size="11" />
+                <span class="rating-value @(Midia.ImdbRating == null ? "rating-na" : "")">@(Midia.ImdbRating?.ToString("0.0") ?? "—")</span>
+            </div>
+            <div class="rating-item rating-user">
+                <FaIcon Name="heart" Size="11" />
+                <span class="rating-value @(Midia.EstrelaUsuario == null ? "rating-na" : "")">@(Midia.EstrelaUsuario?.ToString() ?? "—")</span>
+            </div>
+        </div>
+        @if (ShowProgress && Midia.Tipo == TipoMidia.Serie && Midia.TotalEpisodios > 0)
+        {
+            <div class="media-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: @(Midia.ProgressoPercentual)%"></div>
+                </div>
+                <div class="progress-text">@Midia.EpisodiosAssistidos/@Midia.TotalEpisodios eps</div>
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(FooterText))
+        {
+            <div class="media-footer-note">@FooterText</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required MidiaCompletaVM Midia { get; set; }
+
+    [Parameter]
+    public bool ShowProgress { get; set; }
+
+    [Parameter]
+    public string? FooterText { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnSelect { get; set; }
+
+    private Task HandleClick() => OnSelect.InvokeAsync(Midia.Id);
+
+    private static string? GetPosterUrl(MidiaCompletaVM midia)
+    {
+        return string.IsNullOrWhiteSpace(midia.ImagemUrl)
+            ? midia.ImagemExibicao
+            : midia.ImagemUrl;
+    }
+}
